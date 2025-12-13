@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
   },
   // Vercel optimization
   output: 'standalone',
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
+  },
   // Silence Turbopack warning
   turbopack: {
     // Empty config

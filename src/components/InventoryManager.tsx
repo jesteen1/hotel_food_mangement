@@ -101,7 +101,9 @@ export default function InventoryManager({ products: initialProducts }: { produc
         setEditingId(null);
 
         try {
-            await updateProduct(id, editForm);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { _id, ...updateData } = editForm;
+            await updateProduct(id, updateData);
         } catch (error) {
             console.error("Update failed:", error);
             // Revert or alert
