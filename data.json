@@ -1,0 +1,32 @@
+{
+  "products": [
+    {
+      "_id": "local_1",
+      "name": "Burger",
+      "price": 150,
+      "category": "Main",
+      "stock": 50,
+      "description": "Juicy chicken burger",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
+    },
+    {
+      "_id": "local_2",
+      "name": "Fries",
+      "price": 80,
+      "category": "Sides",
+      "stock": 100,
+      "description": "Crispy salted fries",
+      "image": "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d"
+    },
+    {
+      "_id": "local_3",
+      "name": "Coke",
+      "price": 50,
+      "category": "Drinks",
+      "stock": 200,
+      "description": "Chilled cola",
+      "image": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97"
+    }
+  ],
+  "orders": []
+}
