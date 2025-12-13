@@ -34,18 +34,14 @@ export default function Home() {
           </Link>
 
           <Link
-            href="/admin"
+            href="/admin/inventory"
             className="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-orange-600 transition-all bg-white border-2 border-orange-100 rounded-full hover:border-orange-200 hover:bg-orange-50 hover:scale-105 shadow-sm"
           >
             Admin Dashboard
           </Link>
         </div>
 
-        <form action={seedInitialData} className="mt-12">
-          <button className="text-sm text-gray-400 underline hover:text-gray-600">
-            (Dev Only) Seed Initial Data
-          </button>
-        </form>
+
       </div>
     </div>
   );

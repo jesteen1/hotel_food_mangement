@@ -49,9 +49,9 @@ export default function AdminOrderList({ initialOrders }: { initialOrders: Order
         return () => clearInterval(interval);
     }, []);
 
-    const filteredOrders = filter === 'All'
+    const filteredOrders = (filter === 'All'
         ? orders
-        : orders.filter(o => o.status === filter);
+        : orders.filter(o => o.status === filter)).filter(o => o.status !== 'Paid');
 
     const getStatusColor = (status: string) => {
         switch (status) {
