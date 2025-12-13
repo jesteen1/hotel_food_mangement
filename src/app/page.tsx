@@ -1,17 +1,13 @@
-
+import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ChefHat } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { seedInitialData } from './actions';
 
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-5rem)] bg-gradient-to-br from-orange-50 to-red-100 p-6">
       <div className="max-w-3xl text-center space-y-8 animate-in fade-in slide-in-from-bottom-10 duration-700">
-        <div className="flex justify-center mb-6">
-          <div className="p-4 bg-white rounded-full shadow-xl">
-            <ChefHat size={64} className="text-orange-500" />
-          </div>
-        </div>
+
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 drop-shadow-sm">
           Delicious Food, <br />
