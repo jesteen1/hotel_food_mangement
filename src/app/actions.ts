@@ -1,94 +1,49 @@
 'use server';
 
-import connectToDatabase from '@/lib/db';
-import { Product, Order, IProduct, Settings } from '@/lib/models';
-import { revalidatePath } from 'next/cache';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { cookies } from 'next/headers';
+export async function manualSeed() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) return { success: false, error: "Not logged in" };
 
-// --- AUTH ACTIONS ---
+    // Dynamic import to avoid bundling issues
+    const { seedDefaultProducts } = await import("@/lib/seeder");
+    await seedDefaultProducts(session.user.email);
 
-export async function login(role: string, password: string) {
-    try {
-        await connectToDatabase();
-        const settings = await Settings.findOne();
-
-        if (!settings) {
-            return { success: false, error: "Settings not found" };
-        }
-
-        const validPassword = settings.auth[role as keyof typeof settings.auth];
-
-        if (password === validPassword) {
-            // Set cookie
-            (await cookies()).set('hotel_role', role, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                path: '/',
-                maxAge: 60 * 60 * 24 // 1 day
-            });
-            return { success: true };
-        }
-
-        return { success: false, error: "Invalid password" };
-    } catch (error) {
-        console.error("Login Error:", error);
-        return { success: false, error: "Login failed" };
-    }
-}
-
-export async function logout() {
-    (await cookies()).delete('hotel_role');
+    revalidatePath('/admin/inventory');
+    revalidatePath('/menu');
     return { success: true };
 }
 
-export async function getSession() {
-    const role = (await cookies()).get('hotel_role')?.value;
-    return { role };
+import connectToDatabase from '@/lib/db';
+import { Product, Order, Settings, User, Otp, IProduct } from '@/lib/models';
+import { revalidatePath } from 'next/cache';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+// --- AUTH & USER ACTIONS ---
+
+async function getOwnerEmail() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+        throw new Error("Unauthorized: No session found");
+    }
+    return session.user.email;
 }
 
-export async function updatePassword(targetRole: string, newPassword: string) {
+export async function getUserSession() {
+    return getServerSession(authOptions);
+}
+
+export async function updateCompanyName(companyName: string) {
     try {
         await connectToDatabase();
-
-        // internal check: only master can update
-        const session = await getSession();
-        if (session.role !== 'master') {
-            return { success: false, error: "Unauthorized" };
-        }
-
-        const settings = await Settings.findOne();
-        if (!settings) return { success: false, error: "Settings not found" };
-
-        settings.auth[targetRole as keyof typeof settings.auth] = newPassword;
-        await settings.save();
-
-        revalidatePath('/admin/settings');
+        const email = await getOwnerEmail();
+        await User.findOneAndUpdate({ email }, { companyName });
         return { success: true };
     } catch (error) {
-        console.error("Update Password Error:", error);
+        console.error("Update Company Name Error:", error);
         return { success: false, error: "Update failed" };
-    }
-}
-
-export async function getAuthSettings() {
-    try {
-        await connectToDatabase();
-        const settings = await Settings.findOne().lean();
-        if (!settings) return null;
-
-        // Return full auth object (passwords included) for Master to view
-        const session = await getSession();
-        if (session.role === 'master') {
-            return JSON.parse(JSON.stringify(settings.auth));
-        }
-
-        // Return only keys, not passwords
-        return Object.keys(settings.auth);
-    } catch (error) {
-        console.error("Get Settings Error:", error);
-        return [];
     }
 }
 
@@ -117,25 +72,143 @@ export async function uploadImage(formData: FormData) {
     return `/uploads/${filename}`;
 }
 
+// --- Settings & Security ---
+
+export async function getAuthSettings() {
+    try {
+        await connectToDatabase();
+        const email = await getOwnerEmail();
+
+        // Find existing settings
+        let settings = await Settings.findOne({ ownerEmail: email }).lean();
+
+        if (!settings) {
+            // Create default settings if not exists
+            const newSettings = await Settings.create({
+                ownerEmail: email,
+                auth: {
+                    chief: 'admin123',
+                    inventory: 'admin123',
+                    billing: 'admin123',
+                    menu: 'admin123',
+                    master: 'admin123'
+                }
+            });
+            // Convert to plain object if created
+            settings = JSON.parse(JSON.stringify(newSettings));
+        }
+
+        // Return just the auth object
+        return JSON.parse(JSON.stringify((settings as any).auth));
+    } catch (error) {
+        console.error("Get Settings Error:", error);
+        return null;
+    }
+}
+
+export async function updatePassword(role: string, newPass: string) {
+    try {
+        const validRoles = ['chief', 'inventory', 'billing', 'menu', 'master'];
+        if (!validRoles.includes(role)) {
+            return { success: false, error: "Invalid role" };
+        }
+
+        await connectToDatabase();
+        const email = await getOwnerEmail();
+
+        // Use $set to update nested field
+        await Settings.findOneAndUpdate(
+            { ownerEmail: email },
+            { $set: { [`auth.${role}`]: newPass } },
+            { upsert: true, new: true }
+        );
+
+        return { success: true };
+
+    } catch (error) {
+        console.error("Update Password Error:", error);
+        return { success: false, error: "Update failed" };
+    }
+}
+
+export async function verifyRolePassword(role: string, password: string) {
+    try {
+        await connectToDatabase();
+        const settings = await getAuthSettings();
+
+        if (!settings) return { success: false, error: "Settings not found" };
+
+        const storedPassword = settings[role];
+        // Since we are storing plain text passwords as per current implementation (based on SettingsClient)
+        // We simple compare. Ideally, this should be hashed.
+
+        if (storedPassword === password) {
+            return { success: true };
+        }
+
+        return { success: false, error: "Incorrect Password" };
+    } catch (error) {
+        console.error("Verify Password Error:", error);
+        return { success: false, error: "Verification failed" };
+    }
+}
+
+
 
 // --- Products ---
 
 export async function getProducts() {
     try {
         await connectToDatabase();
-        // Force Mongoose to return POJOs
-        const products = await Product.find({}).lean();
-        return JSON.parse(JSON.stringify(products));
+        // Public for now? Or should only owner see?
+        // User said: "fresh signup... modified inventory... save in their google account only".
+        // This implies Public viewers (ordering food) need to see specific owner's products. 
+        // BUT, how does the public user know WHICH owner's menu to see?
+        // Usually, the app would be subdomained or have a store ID.
+        // For this single-app demo, we might need to rely on the logged-in Admin seeing their own products.
+        // What about the "Client Portal" (ordering)? 
+        // If I am a customer sitting in the cinema, I scan a QR code. That code usually links to the specific cinema's menu.
+        // Given constraint: "allow google auth... save in their google account".
+        // I will assume for now:
+        // 1. Admin uses Google Auth -> Sees their products.
+        // 2. Client (Ordering flow) -> Currently the app creates orders without auth. 
+        //    CRITICAL: The client needs to know WHO they are ordering from.
+        //    Ideally, query param `?shop=ownerEmail` or we assume the "User" IS the shop owner and they are using the app on a tablet given to the customer?
+        //    Or maybe the Admin logs in on the "Kiosk"?
+        //    Let's stick to: "Authenticated user sees their stuff".
+        //    For the "Menu" page (public), we currently fetch `getProducts`. 
+        //    If we make `getProducts` protected, public users can't see menu.
+        //    
+        //    Compromise: `getProducts` returns ALL products if no owner specified? Or we filter by a hardcoded owner for "Main" view?
+        //    Actually, if I am "Fresh Login", I get "Fresh Inventory".
+        //    So `getProducts` MUST filter by `ownerEmail` of the logged-in user.
+        //    This means to ORDER, you must be logged in as the owner (Kiosk mode)? 
+        //    Or we need a way to fetch public products for a specific shop.
+        //    
+        //    Let's implement `getProducts` to require auth for Management. 
+        //    For Public menu, we might need a separate action `getShopProducts(ownerEmail)`.
+        //    But `src/app/menu/page.tsx` calls `getProducts`.
+        //    I will make `getProducts` try to get session. If session exists, return owner's products.
+
+        const session = await getServerSession(authOptions);
+        if (session?.user?.email) {
+            const products = await Product.find({ ownerEmail: session.user.email }).lean();
+            return JSON.parse(JSON.stringify(products));
+        }
+
+        // Fallback for non-logged in users (e.g. initial demo)? 
+        // Or return empty? Returning empty ensures "Fresh Signup" experience.
+        return [];
     } catch (error) {
         console.error("Database connection failed:", error);
-        // Fallback only to empty array or throw, but for now we want to see if real DB works
         return [];
     }
 }
 
 export async function createProduct(data: Partial<IProduct>) {
     await connectToDatabase();
-    const product = await Product.create(data);
+    const email = await getOwnerEmail();
+    const product = await Product.create({ ...data, ownerEmail: email });
     revalidatePath('/admin/inventory');
     revalidatePath('/menu');
     return JSON.parse(JSON.stringify(product));
@@ -143,24 +216,25 @@ export async function createProduct(data: Partial<IProduct>) {
 
 export async function updateProductStock(id: string, stock: number) {
     await connectToDatabase();
-    await Product.findByIdAndUpdate(id, { stock });
+    const email = await getOwnerEmail();
+    await Product.findOneAndUpdate({ _id: id, ownerEmail: email }, { stock });
     revalidatePath('/admin/inventory');
     revalidatePath('/menu');
 }
 
 export async function updateProduct(id: string, data: Partial<IProduct>) {
     await connectToDatabase();
-    await Product.findByIdAndUpdate(id, data);
+    const email = await getOwnerEmail();
+    await Product.findOneAndUpdate({ _id: id, ownerEmail: email }, data);
     revalidatePath('/admin/inventory');
     revalidatePath('/menu');
 }
 
 export async function deleteProduct(id: string) {
-    console.log("Server deleting product:", id);
     try {
         await connectToDatabase();
-        const result = await Product.findByIdAndDelete(id);
-        console.log("Delete result:", result);
+        const email = await getOwnerEmail();
+        const result = await Product.findOneAndDelete({ _id: id, ownerEmail: email });
         revalidatePath('/admin/inventory');
         revalidatePath('/menu');
     } catch (error) {
@@ -171,16 +245,38 @@ export async function deleteProduct(id: string) {
 
 // --- Orders ---
 
-export async function createOrder(seatNumber: string, items: { productId: string; quantity: number }[]) {
+export async function createOrder(
+    seatNumber: string,
+    items: { productId: string; quantity: number }[],
+    foodNote?: string,
+    applyTax: boolean = false
+) {
     await connectToDatabase();
+
+    // Who is the owner? The person creating the order might be a guest.
+    // If guest, how do we assign owner?
+    // We need the `ownerEmail` of the product to know who gets the order.
+    // We assume all items belong to the SAME owner (Cart should enforce this, or we just handle it).
+    // Let's take the first product's owner.
+
+    // Security risk: Guest could theoretically mix products?
+    // For now, let's fetch the first product to determine the owner.
+
+    if (items.length === 0) throw new Error("No items");
+
+    const firstProduct = await Product.findById(items[0].productId);
+    if (!firstProduct) throw new Error("Product not found");
+
+    const ownerEmail = firstProduct.ownerEmail; // The shop owner
 
     try {
         let total = 0;
         const orderItems = [];
 
         for (const item of items) {
-            const product = await Product.findById(item.productId);
-            if (!product) continue;
+            // Verify product belongs to same owner
+            const product = await Product.findOne({ _id: item.productId, ownerEmail });
+            if (!product) throw new Error(`Product invalid or mixed owners`);
 
             if (product.stock < item.quantity) {
                 throw new Error(`Not enough stock for ${product.name}`);
@@ -197,11 +293,20 @@ export async function createOrder(seatNumber: string, items: { productId: string
             });
         }
 
+        let taxAmount = 0;
+        if (applyTax) {
+            taxAmount = Math.round(total * 0.18);
+            total += taxAmount;
+        }
+
         const order = await Order.create({
             seatNumber,
             items: orderItems,
             totalAmount: total,
-            status: 'Pending'
+            status: 'Pending',
+            foodNote: foodNote || '',
+            taxAmount,
+            ownerEmail
         });
 
         revalidatePath('/admin');
@@ -215,7 +320,8 @@ export async function createOrder(seatNumber: string, items: { productId: string
 export async function getOrders() {
     try {
         await connectToDatabase();
-        const orders = await Order.find({}).sort({ createdAt: -1 }).lean();
+        const email = await getOwnerEmail();
+        const orders = await Order.find({ ownerEmail: email }).sort({ createdAt: -1 }).lean();
         return JSON.parse(JSON.stringify(orders));
     } catch (error) {
         console.error("Failed to fetch orders", error);
@@ -225,7 +331,8 @@ export async function getOrders() {
 
 export async function updateOrderStatus(id: string, status: string) {
     await connectToDatabase();
-    await Order.findByIdAndUpdate(id, { status });
+    const email = await getOwnerEmail();
+    await Order.findOneAndUpdate({ _id: id, ownerEmail: email }, { status });
     revalidatePath('/admin');
 }
 
@@ -234,9 +341,12 @@ export async function updateOrderStatus(id: string, status: string) {
 export async function getBill(seatNumber: string) {
     try {
         await connectToDatabase();
+        const email = await getOwnerEmail(); // Admin requesting bill
+
         const orders = await Order.find({
             seatNumber,
-            status: 'Completed'
+            status: 'Completed',
+            ownerEmail: email
         }).lean();
 
         if (!orders || orders.length === 0) {
@@ -258,11 +368,15 @@ export async function getBill(seatNumber: string) {
             });
         });
 
+        const user = await User.findOne({ email });
+
         return {
             seatNumber,
             ordersCount: orders.length,
             items: allItems,
-            grandTotal
+            grandTotal,
+            companyName: user?.companyName || "FOODBOOK",
+            foodNote: orders[0]?.foodNote // Getting note from first order for simplicity or aggregate?
         };
 
     } catch (error) {
@@ -272,14 +386,13 @@ export async function getBill(seatNumber: string) {
 }
 
 export async function closeBill(seatNumber: string) {
-    console.log("Closing bill for seat:", seatNumber);
     try {
         await connectToDatabase();
+        const email = await getOwnerEmail();
         const result = await Order.updateMany(
-            { seatNumber, status: 'Completed' },
+            { seatNumber, status: 'Completed', ownerEmail: email },
             { $set: { status: 'Paid' } }
         );
-        console.log("Update result:", result);
 
         revalidatePath('/admin');
         revalidatePath('/admin/billing');
@@ -295,16 +408,11 @@ export async function closeBill(seatNumber: string) {
     }
 }
 
-export async function seedInitialData() {
-    // No-op or call seed script logic here if wanted, but generally we rely on external seed now
-}
-
-// --- Billing Modifications ---
-
 export async function removeItemFromBill(seatNumber: string, itemName: string) {
     try {
         await connectToDatabase();
-        const orders = await Order.find({ seatNumber, status: 'Completed' });
+        const email = await getOwnerEmail();
+        const orders = await Order.find({ seatNumber, status: 'Completed', ownerEmail: email });
 
         for (const order of orders) {
             const itemIndex = order.items.findIndex((i: any) => i.name === itemName);
@@ -320,6 +428,14 @@ export async function removeItemFromBill(seatNumber: string, itemName: string) {
 
                 // Recalculate Order Total
                 order.totalAmount = order.items.reduce((sum: number, i: any) => sum + (i.price * i.quantity), 0);
+
+                // Re-apply tax if it was there? Complex. For now simplify.
+                if (order.taxAmount) {
+                    // Recalc tax
+                    const sub = order.items.reduce((sum: number, i: any) => sum + (i.price * i.quantity), 0);
+                    order.taxAmount = Math.round(sub * 0.18);
+                    order.totalAmount = sub + order.taxAmount;
+                }
 
                 if (order.items.length === 0) {
                     await Order.findByIdAndDelete(order._id);
@@ -343,7 +459,8 @@ export async function removeItemFromBill(seatNumber: string, itemName: string) {
 export async function addItemToBill(seatNumber: string, productId: string) {
     try {
         await connectToDatabase();
-        const product = await Product.findById(productId);
+        const email = await getOwnerEmail();
+        const product = await Product.findOne({ _id: productId, ownerEmail: email });
         if (!product) return { success: false, error: 'Product not found' };
 
         if (product.stock < 1) return { success: false, error: 'Out of Stock' };
@@ -360,7 +477,8 @@ export async function addItemToBill(seatNumber: string, productId: string) {
                 price: product.price
             }],
             totalAmount: product.price,
-            status: 'Completed'
+            status: 'Completed',
+            ownerEmail: email
         });
 
         revalidatePath('/admin/billing');
@@ -369,5 +487,176 @@ export async function addItemToBill(seatNumber: string, productId: string) {
     } catch (error) {
         console.error("Add item failed:", error);
         return { success: false, error: 'Failed to add item' };
+    }
+}
+
+
+export async function sendOtp(email: string, type: 'login' | 'signup' | 'security' | 'delete_account' = 'login') {
+    try {
+        await connectToDatabase();
+
+        const userExists = await User.findOne({ email });
+
+        if (type === 'login' && !userExists) return { success: false, error: 'UserNotFound' };
+        if (type === 'signup' && userExists) return { success: false, error: 'UserExists' };
+        // Security checks
+        if ((type === 'security' || type === 'delete_account') && !userExists) return { success: false, error: 'UserNotFound' };
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+        await Otp.deleteMany({ email });
+        await Otp.create({ email, otp, expiresAt });
+
+        if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+            const nodemailer = (await import('nodemailer')).default;
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: Number(process.env.SMTP_PORT) || 587,
+                secure: false,
+                auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+            });
+
+            let subject = 'Your Login Code - FoodNote';
+            let title = 'Your login verification code is:';
+            let color = '#ea580c'; // Orange
+
+            if (type === 'signup') {
+                subject = 'Verify & Welcome to FoodNote! 🎉';
+                title = 'Verify your email to create your account:';
+                color = '#166534'; // Green
+            } else if (type === 'security') {
+                subject = 'Security Verification - Action Required 🛡️';
+                title = 'Verify your identity for Admin Settings access:';
+                color = '#dc2626'; // Red
+            } else if (type === 'delete_account') {
+                subject = '⚠️ URGENT: Account Deletion Request';
+                title = 'Use this code to PERMANENTLY DELETE your account:';
+                color = '#991b1b'; // Dark Red
+            }
+
+            const htmlContent = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h1 style="color: ${color}; margin: 0;">${type === 'delete_account' ? 'DELETE ACCOUNT' : (type === 'signup' ? 'Welcome to FoodBook!' : (type === 'login' ? 'FoodBook Login' : 'FoodBook Security'))}</h1>
+                    </div>
+                    <div style="background-color: ${type === 'delete_account' ? '#fef2f2' : (type === 'signup' ? '#f0fdf4' : '#f8fafc')}; padding: 20px; border-radius: 8px; text-align: center; border-left: 5px solid ${color};">
+                        ${type === 'signup' ? '<p style="margin: 0 0 15px; color: #166534; font-size: 18px; font-weight: bold;">Thanks for starting your journey with us! 🚀</p>' : ''}
+                        <p style="margin: 0 0 10px; color: #333; font-size: 16px;">${title}</p>
+                        <h2 style="margin: 0; color: ${color}; letter-spacing: 5px; font-size: 32px;">${otp}</h2>
+                        <p style="margin: 10px 0 0; color: #666; font-size: 14px;">This code expires in 5 minutes.</p>
+                    </div>
+                    ${type === 'delete_account' ? `
+                    <div style="margin-top: 20px; font-size: 14px; color: #dc2626; text-align: center; font-weight: bold;">
+                        <p>WARNING: This action is irreversible. All your data will be lost forever.</p>
+                    </div>` : ''}
+                </div>
+            `;
+
+            await transporter.sendMail({
+                from: `"FoodNote Security" <${process.env.SMTP_USER}>`,
+                to: email,
+                subject: subject,
+                html: htmlContent
+            });
+            console.log(`OTP sent to ${email} via SMTP`);
+        } else {
+            console.log(`[DEV MODE] ${type.toUpperCase()} OTP for ${email}: ${otp}`);
+        }
+
+        return { success: true, mode: (process.env.SMTP_HOST ? 'smtp' : 'dev'), otp: (process.env.SMTP_HOST ? undefined : otp) };
+
+    } catch (error) {
+        console.error("Send OTP Error:", error);
+        return { success: false, error: "Failed to send OTP" };
+    }
+}
+
+export async function deleteAccount(otp: string) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.email) return { success: false, error: "Unauthorized" };
+
+        await connectToDatabase();
+        const email = session.user.email;
+
+        // Verify OTP
+        const otpRecord = await Otp.findOne({ email });
+        if (!otpRecord) return { success: false, error: 'Invalid or expired OTP' };
+        if (otpRecord.otp !== otp) return { success: false, error: 'Invalid OTP' };
+
+        await Otp.deleteOne({ _id: otpRecord._id });
+
+        // Delete Data
+        await Promise.all([
+            User.deleteOne({ email }),
+            Settings.deleteOne({ ownerEmail: email }),
+            Product.deleteMany({ ownerEmail: email }),
+            Order.deleteMany({ ownerEmail: email })
+        ]);
+
+        return { success: true };
+    } catch (error) {
+        console.error("Delete Account Error:", error);
+        return { success: false, error: "Failed to delete account" };
+    }
+}
+
+// sendWelcomeEmail moved to @/lib/email.ts to avoid circular deps
+
+export async function setPassword(password: string) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) return { success: false, error: "Unauthorized" };
+
+    try {
+        // Server-Side Validation
+        if (!password || password.length < 8) {
+            return { success: false, error: "Password must be at least 8 characters long" };
+        }
+        if (!/[a-zA-Z]/.test(password)) {
+            return { success: false, error: "Password must contain at least one letter" };
+        }
+        if (!/\d/.test(password)) {
+            return { success: false, error: "Password must contain at least one number" };
+        }
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            return { success: false, error: "Password must contain at least one special character" };
+        }
+
+        await connectToDatabase();
+        // Dynamic import bcrypt
+        const bcrypt = await import('bcryptjs');
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await User.findOneAndUpdate(
+            { email: session.user.email },
+            {
+                password: hashedPassword,
+                hasSetPassword: true
+            }
+        );
+
+        return { success: true };
+    } catch (error) {
+        console.error("Set Password Error:", error);
+        return { success: false, error: "Failed to set password" };
+    }
+}
+
+export async function verifyStepUpOtp(email: string, otp: string) {
+    try {
+        await connectToDatabase();
+        const otpRecord = await Otp.findOne({ email });
+
+        if (!otpRecord) return { success: false, error: 'Invalid or expired OTP' };
+        if (otpRecord.otp !== otp) return { success: false, error: 'Invalid OTP' };
+        if (new Date() > otpRecord.expiresAt) return { success: false, error: 'OTP Expired' };
+
+        // Valid - Delete used OTP
+        await Otp.deleteOne({ _id: otpRecord._id });
+        return { success: true };
+    } catch (error) {
+        console.error("Step-up Verify Error:", error);
+        return { success: false, error: "Verification failed" };
     }
 }

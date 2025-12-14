@@ -11,9 +11,12 @@ import { useRouter } from 'next/navigation';
 export default function CartPage() {
     const { cart, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
     const [seatNumber, setSeatNumber] = useState('');
+    const [foodNote, setFoodNote] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
+
+    const finalTotal = totalPrice;
 
     const handleCreateOrder = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,7 +31,7 @@ export default function CartPage() {
 
         try {
             const items = cart.map(item => ({ productId: item.productId, quantity: item.quantity }));
-            await createOrder(seatNumber, items);
+            await createOrder(seatNumber, items, foodNote, false);
             clearCart();
             // Redirect or show success
             router.push('/order-success');
@@ -127,6 +130,26 @@ export default function CartPage() {
                             className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-medium text-lg placeholder:text-gray-400"
                             required
                         />
+                    </div>
+
+                    <div>
+                        <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-1">
+                            Food Note (Optional)
+                        </label>
+                        <textarea
+                            id="note"
+                            placeholder="Any special requests? (e.g., Extra spicy, less sugar)"
+                            value={foodNote}
+                            onChange={(e) => setFoodNote(e.target.value)}
+                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-medium text-base placeholder:text-gray-400 min-h-[80px]"
+                        />
+                    </div>
+
+
+
+                    <div className="flex justify-between items-center py-2 border-t border-gray-100">
+                        <span className="text-gray-600">Total to Pay</span>
+                        <span className="text-2xl font-bold text-gray-900">₹{finalTotal}</span>
                     </div>
 
                     {error && (

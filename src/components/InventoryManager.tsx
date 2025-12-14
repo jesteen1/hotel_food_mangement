@@ -141,12 +141,25 @@ export default function InventoryManager({ products: initialProducts }: { produc
 
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-gray-900">Products</h2>
-                <button
-                    onClick={() => setIsAdding(!isAdding)}
-                    className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-bold hover:bg-gray-800 transition-colors"
-                >
-                    <Plus size={18} /> Add Product
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={async () => {
+                            const { manualSeed } = await import("@/app/actions");
+                            await manualSeed();
+                            window.location.reload();
+                        }}
+                        className="px-3 py-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors border border-transparent hover:border-orange-200"
+                        title="Reload Template Images"
+                    >
+                        <LayoutGrid size={18} />
+                    </button>
+                    <button
+                        onClick={() => setIsAdding(!isAdding)}
+                        className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-bold hover:bg-gray-800 transition-colors"
+                    >
+                        <Plus size={18} /> Add Product
+                    </button>
+                </div>
             </div>
 
             {/* ... (Add Product Form - keep as is, just need to make sure it renders) */}
@@ -195,6 +208,8 @@ export default function InventoryManager({ products: initialProducts }: { produc
                     </form>
                 </div>
             )}
+
+
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 

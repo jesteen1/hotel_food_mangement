@@ -1,10 +1,10 @@
-
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ShoppingCart, LayoutDashboard, Coffee, Box, Menu as MenuIcon, X, Receipt, Shield } from 'lucide-react';
 import { useState } from 'react';
+import LogoutButton from './LogoutButton';
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -15,7 +15,7 @@ export default function Navbar() {
     const links = [
         { href: '/menu', label: 'Menu', icon: Coffee },
         { href: '/cart', label: 'Cart', icon: ShoppingCart },
-        { href: '/admin', label: 'Chief', icon: LayoutDashboard },
+        { href: '/admin/kitchen', label: 'Chief', icon: LayoutDashboard },
         { href: '/admin/inventory', label: 'Inventory', icon: Box },
         { href: '/admin/billing', label: 'Billing', icon: Receipt },
         { href: '/admin/settings', label: 'Admin', icon: Shield },
@@ -28,7 +28,7 @@ export default function Navbar() {
                     <div className="flex items-center">
                         <Link href="/" className="flex-shrink-0 flex items-center gap-2">
                             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
-                                FoodBook
+                                FoodBook App
                             </span>
                         </Link>
                     </div>
@@ -51,6 +51,9 @@ export default function Navbar() {
                                 </Link>
                             );
                         })}
+                        <div className="pl-2 border-l border-gray-200 ml-2">
+                            <LogoutButton />
+                        </div>
                     </div>
 
                     {/* Mobile menu button */}
@@ -66,8 +69,6 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Menu */}
-            {/* Mobile Menu Overlay & Drawer */}
-            {/* Mobile Menu Overlay & Drawer */}
             <div
                 className={`fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm transition-opacity duration-300 md:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 onClick={() => setIsOpen(false)}
@@ -79,7 +80,7 @@ export default function Navbar() {
                 <div className="p-6 flex flex-col h-full bg-white">
                     <div className="flex items-center justify-between mb-8">
                         <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
-                            FoodBook
+                            FoodBook App
                         </span>
                         <button
                             onClick={() => setIsOpen(false)}
@@ -107,6 +108,9 @@ export default function Navbar() {
                                 </Link>
                             );
                         })}
+                        <div className="pt-4 mt-4 border-t border-gray-100">
+                            <LogoutButton />
+                        </div>
                     </div>
 
                     <div className="pt-6 border-t border-gray-100 bg-white">

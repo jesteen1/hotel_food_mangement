@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export default function BillingPageWrapper() {
     return (
-        <AuthGuard role="billing">
+        <AuthGuard role="billing" requirePassword={true}>
             <BillingClient />
         </AuthGuard>
     );

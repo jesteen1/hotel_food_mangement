@@ -12,6 +12,7 @@ export default function BillingPage() {
     const [loading, setLoading] = useState(false);
     const [allProducts, setAllProducts] = useState<any[]>([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [includeTax, setIncludeTax] = useState(true);
 
     // Fetch active seats (seats with 'Completed' orders)
     useEffect(() => {
@@ -208,9 +209,37 @@ export default function BillingPage() {
                                 </button>
                             </div>
 
-                            <div className="flex justify-between items-center pt-6 border-t-2 border-dashed border-gray-200">
-                                <div className="text-3xl font-bold">Total:</div>
-                                <div className="text-3xl font-bold text-orange-600">₹{billData.grandTotal}</div>
+                            <div className="flex flex-col gap-4 border-t-2 border-dashed border-gray-200 pt-6">
+                                <div className="flex justify-between items-center text-gray-600">
+                                    <span className="font-medium">Subtotal:</span>
+                                    <span className="font-bold">₹{billData.items.reduce((sum: number, item: any) => sum + item.total, 0)}</span>
+                                </div>
+
+                                <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="adminTaxToggle"
+                                            checked={includeTax}
+                                            onChange={(e) => setIncludeTax(e.target.checked)}
+                                            className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300"
+                                        />
+                                        <label htmlFor="adminTaxToggle" className="text-gray-700 font-medium cursor-pointer">Include 18% GST</label>
+                                    </div>
+                                    {includeTax && (
+                                        <span className="font-bold text-gray-900">+₹{Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 0.18)}</span>
+                                    )}
+                                </div>
+
+                                <div className="flex justify-between items-center text-3xl font-bold mt-2">
+                                    <div>Total:</div>
+                                    <div className="text-orange-600">
+                                        ₹{includeTax
+                                            ? Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 1.18)
+                                            : billData.items.reduce((sum: number, item: any) => sum + item.total, 0)
+                                        }
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="mt-8 flex gap-4">
@@ -276,6 +305,85 @@ export default function BillingPage() {
                         </div>
                     )}
                 </div>
+            </div>
+            {/* Printable Receipt Section - Hidden on Screen */}
+            <div id="printable-receipt" className="hidden print:block font-mono text-sm leading-tight text-black">
+                {selectedSeat && billData && (
+                    <div className="flex flex-col items-center w-full">
+                        {/* Header */}
+                        <div className="text-center mb-4">
+                            <h1 className="text-2xl font-black uppercase tracking-wider mb-1">{billData.companyName || "FOODBOOK"}</h1>
+                            <p className="text-sm font-bold uppercase tracking-widest mb-2">HOTEL</p>
+                            <div className="border-b-2 border-dashed border-black w-full my-2"></div>
+
+                            {/* Food Note Moved to Top Request */}
+                            {billData.foodNote && (
+                                <div className="text-left w-full mb-2 p-1 border border-black/20 italic">
+                                    <span className="font-bold not-italic">Note:</span> {billData.foodNote}
+                                </div>
+                            )}
+
+                            <div className="w-full flex justify-between text-xs">
+                                <span>Seat: <span className="font-bold text-lg">{selectedSeat}</span></span>
+                                <span>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            <div className="border-b-2 border-dashed border-black w-full my-2"></div>
+                        </div>
+
+                        {/* Items */}
+                        <div className="w-full mb-4">
+                            <table className="w-full text-left">
+                                <thead>
+                                    <tr className="uppercase text-xs border-b border-black">
+                                        <th className="py-1 w-[45%]">Item</th>
+                                        <th className="py-1 text-center w-[15%]">Qty</th>
+                                        <th className="py-1 text-right w-[20%]">Rate</th>
+                                        <th className="py-1 text-right w-[20%]">Amt</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-xs">
+                                    {billData.items.map((item: any, idx: number) => (
+                                        <tr key={idx}>
+                                            <td className="py-1 pr-1 align-top">{item.name}</td>
+                                            <td className="py-1 text-center align-top">{item.quantity}</td>
+                                            <td className="py-1 text-right align-top">{item.price}</td>
+                                            <td className="py-1 text-right align-top font-bold">{item.total}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Totals */}
+                        <div className="w-full border-t-2 border-dashed border-black pt-2 mb-6">
+                            <div className="flex justify-between text-xs mb-1">
+                                <span>Subtotal</span>
+                                <span>₹{billData.items.reduce((sum: number, item: any) => sum + item.total, 0)}</span>
+                            </div>
+                            {includeTax && (
+                                <div className="flex justify-between text-xs mb-1">
+                                    <span>GST (18%)</span>
+                                    <span>₹{Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 0.18)}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between text-xl font-bold mt-2 border-t border-black pt-2">
+                                <span>TOTAL</span>
+                                <span>
+                                    ₹{includeTax
+                                        ? Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 1.18)
+                                        : billData.items.reduce((sum: number, item: any) => sum + item.total, 0)
+                                    }
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="text-center text-xs space-y-1">
+                            <p>*** THANK YOU ***</p>
+                            <p className="pt-2 text-[10px]">Powered by FoodBook</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
