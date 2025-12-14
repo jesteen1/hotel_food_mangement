@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { updateProductStock, createProduct, deleteProduct, updateProduct, uploadImage } from '@/app/actions';
-import { Plus, Trash2, Save, Edit2, X, Upload, Link as LinkIcon } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, Upload, Link as LinkIcon, LayoutGrid, List, UtensilsCrossed } from 'lucide-react';
 
 interface Product {
     _id: string;
@@ -11,6 +11,8 @@ interface Product {
     category: string;
     price: number;
     stock: number;
+    description?: string;
+    image?: string;
 }
 
 export default function InventoryManager({ products: initialProducts }: { products: Product[] }) {
@@ -18,7 +20,10 @@ export default function InventoryManager({ products: initialProducts }: { produc
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<Product>>({});
     const [isAdding, setIsAdding] = useState(false);
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
     const [newProduct, setNewProduct] = useState({ name: '', price: 0, category: '', stock: 0, description: '', image: '' });
+
+    // ... (existing state and handlers: handleStockUpdate, confirmDelete, handleAddProduct, etc.)
 
     // Image Upload State
     const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
@@ -27,6 +32,8 @@ export default function InventoryManager({ products: initialProducts }: { produc
 
     const handleStockUpdate = async (id: string, newStock: number) => {
         await updateProductStock(id, newStock);
+        // Optimistic update for visual responsiveness
+        setProducts(prev => prev.map(p => p._id === id ? { ...p, stock: newStock } : p));
     };
 
     const [productToDelete, setProductToDelete] = useState<string | null>(null);
@@ -89,30 +96,26 @@ export default function InventoryManager({ products: initialProducts }: { produc
     const startEdit = (product: Product) => {
         setEditingId(product._id);
         setEditForm(product);
+        if (viewMode === 'grid') setViewMode('list'); // Switch to list for editing
     };
 
     const saveEdit = async () => {
         if (!editingId) return;
-
-        // Optimistic update
         setProducts(prev => prev.map(p => p._id === editingId ? { ...p, ...editForm } as Product : p));
-
         const id = editingId;
         setEditingId(null);
-
         try {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { _id, ...updateData } = editForm;
             await updateProduct(id, updateData);
         } catch (error) {
             console.error("Update failed:", error);
-            // Revert or alert
         }
     };
 
     return (
         <div>
-            {/* Delete Confirmation Modal */}
+            {/* ... (Delete Confirmation Modal - keep as is) */}
             {productToDelete && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full animate-in zoom-in-95 duration-200">
@@ -146,9 +149,8 @@ export default function InventoryManager({ products: initialProducts }: { produc
                 </button>
             </div>
 
-            {/* Rest of JSX... */}
+            {/* ... (Add Product Form - keep as is, just need to make sure it renders) */}
             {isAdding && (
-                // ... (new product form)
                 <div className="mb-8 bg-white border border-gray-200 rounded-xl p-6 animate-in slide-in-from-top-5">
                     <h3 className="text-lg font-bold mb-4">New Product</h3>
                     <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -195,6 +197,7 @@ export default function InventoryManager({ products: initialProducts }: { produc
             )}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 border-b border-gray-200">
@@ -228,8 +231,18 @@ export default function InventoryManager({ products: initialProducts }: { produc
                                         {editingId === product._id ? (
                                             <input type="number" className="border rounded px-2 py-1 w-24" value={editForm.stock ?? ''} onChange={e => setEditForm({ ...editForm, stock: Number(e.target.value) })} />
                                         ) : (
-                                            <div className="flex items-center gap-2">
-                                                <span className={`font-bold ${product.stock < 10 ? 'text-red-500' : 'text-green-600'}`}>{product.stock}</span>
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={() => handleStockUpdate(product._id, product.stock > 0 ? 0 : 20)}
+                                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}
+                                                >
+                                                    <span
+                                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${product.stock > 0 ? 'translate-x-6' : 'translate-x-1'}`}
+                                                    />
+                                                </button>
+                                                <span className={`font-bold ${product.stock < 10 ? 'text-red-500' : 'text-green-600'}`}>
+                                                    {product.stock > 0 ? product.stock : 'Out'}
+                                                </span>
                                             </div>
                                         )}
                                     </td>
@@ -253,6 +266,65 @@ export default function InventoryManager({ products: initialProducts }: { produc
                         </tbody>
                     </table>
                 </div>
+            </div>
+            ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.map((product) => (
+                    <div
+                        key={product._id}
+                        className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
+                    >
+                        <div className="relative h-48 w-full bg-gray-200 overflow-hidden">
+                            {product.image ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="h-full w-full flex items-center justify-center bg-gray-100 text-gray-400">
+                                    No Image
+                                </div>
+                            )}
+                            {product.stock <= 0 && (
+                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-[2px]">
+                                    <span className="flex items-center gap-2 text-white font-bold px-4 py-2 bg-red-500/80 rounded-full">
+                                        <UtensilsCrossed size={18} />
+                                        Out of Stock
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="text-lg font-bold text-gray-900">{product.name}</h3>
+                                <span className="text-lg font-bold text-gray-900">₹{product.price}</span>
+                            </div>
+
+                            <span className="inline-block px-2 py-0.5 rounded-full bg-gray-100 text-xs font-semibold text-gray-600 mb-4">{product.category}</span>
+
+                            <div className="flex items-center justify-between gap-3">
+                                <button
+                                    onClick={() => handleStockUpdate(product._id, product.stock > 0 ? 0 : 20)}
+                                    className={`flex-1 py-3 rounded-xl font-bold transition-all active:scale-95 ${product.stock > 0
+                                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                        : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                        }`}
+                                >
+                                    {product.stock > 0 ? 'Mark Out of Stock' : 'Restock (20)'}
+                                </button>
+                                <button
+                                    onClick={() => startEdit(product)}
+                                    className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors"
+                                >
+                                    <Edit2 size={20} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );

@@ -298,3 +298,76 @@ export async function closeBill(seatNumber: string) {
 export async function seedInitialData() {
     // No-op or call seed script logic here if wanted, but generally we rely on external seed now
 }
+
+// --- Billing Modifications ---
+
+export async function removeItemFromBill(seatNumber: string, itemName: string) {
+    try {
+        await connectToDatabase();
+        const orders = await Order.find({ seatNumber, status: 'Completed' });
+
+        for (const order of orders) {
+            const itemIndex = order.items.findIndex((i: any) => i.name === itemName);
+
+            if (itemIndex > -1) {
+                const item = order.items[itemIndex];
+
+                if (item.quantity > 1) {
+                    item.quantity -= 1;
+                } else {
+                    order.items.splice(itemIndex, 1);
+                }
+
+                // Recalculate Order Total
+                order.totalAmount = order.items.reduce((sum: number, i: any) => sum + (i.price * i.quantity), 0);
+
+                if (order.items.length === 0) {
+                    await Order.findByIdAndDelete(order._id);
+                } else {
+                    await order.save();
+                }
+
+                revalidatePath('/admin/billing');
+                return { success: true };
+            }
+        }
+
+        return { success: false, error: 'Item not found in any active order' };
+
+    } catch (error) {
+        console.error("Remove item failed:", error);
+        return { success: false, error: 'Failed to remove item' };
+    }
+}
+
+export async function addItemToBill(seatNumber: string, productId: string) {
+    try {
+        await connectToDatabase();
+        const product = await Product.findById(productId);
+        if (!product) return { success: false, error: 'Product not found' };
+
+        if (product.stock < 1) return { success: false, error: 'Out of Stock' };
+
+        product.stock -= 1;
+        await product.save();
+
+        const order = await Order.create({
+            seatNumber,
+            items: [{
+                product: product._id,
+                name: product.name,
+                quantity: 1,
+                price: product.price
+            }],
+            totalAmount: product.price,
+            status: 'Completed'
+        });
+
+        revalidatePath('/admin/billing');
+        return { success: true };
+
+    } catch (error) {
+        console.error("Add item failed:", error);
+        return { success: false, error: 'Failed to add item' };
+    }
+}

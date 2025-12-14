@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getBill, closeBill, getOrders } from '@/app/actions';
-import { Printer, CheckCircle, ArrowLeft } from 'lucide-react';
+import { getBill, closeBill, getOrders, removeItemFromBill, addItemToBill, getProducts } from '@/app/actions';
+import { Printer, CheckCircle, ArrowLeft, Trash2, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function BillingPage() {
@@ -10,13 +10,21 @@ export default function BillingPage() {
     const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
     const [billData, setBillData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const [allProducts, setAllProducts] = useState<any[]>([]);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     // Fetch active seats (seats with 'Completed' orders)
     useEffect(() => {
         loadActiveSeats();
+        loadProducts();
         const interval = setInterval(loadActiveSeats, 4000);
         return () => clearInterval(interval);
     }, []);
+
+    const loadProducts = async () => {
+        const products = await getProducts();
+        setAllProducts(products);
+    };
 
     const loadActiveSeats = async () => {
         try {
@@ -33,6 +41,10 @@ export default function BillingPage() {
 
     const handleSelectSeat = async (seat: string) => {
         setSelectedSeat(seat);
+        refreshBill(seat);
+    };
+
+    const refreshBill = async (seat: string) => {
         setLoading(true);
         const data = await getBill(seat);
         setBillData(data);
@@ -44,7 +56,6 @@ export default function BillingPage() {
     const handleCloseBill = async () => {
         if (!selectedSeat) return;
         setClosing(true);
-        // confirm removed for debugging responsiveness
         try {
             const result = await closeBill(selectedSeat);
             if (result.success) {
@@ -62,8 +73,56 @@ export default function BillingPage() {
         }
     };
 
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+
+    const confirmRemoveItem = async () => {
+        if (!selectedSeat || !itemToDelete) return;
+        const result = await removeItemFromBill(selectedSeat, itemToDelete);
+        if (result.success) {
+            refreshBill(selectedSeat);
+            setItemToDelete(null);
+        } else {
+            alert("Failed to remove item");
+        }
+    };
+
+    const handleAddItem = async (productId: string) => {
+        if (!selectedSeat) return;
+        const result = await addItemToBill(selectedSeat, productId);
+        if (result.success) {
+            refreshBill(selectedSeat);
+            setIsAddModalOpen(false);
+        } else {
+            alert(result.error || "Failed to add item");
+        }
+    };
+
     return (
         <div className="p-6 max-w-6xl mx-auto">
+            {/* Delete Confirmation Modal */}
+            {itemToDelete && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full animate-in zoom-in-95 duration-200">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Remove Item?</h3>
+                        <p className="text-gray-500 mb-6">Are you sure you want to remove <span className="font-bold text-gray-900">{itemToDelete}</span> from the bill?</p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setItemToDelete(null)}
+                                className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmRemoveItem}
+                                className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex items-center gap-4 mb-8">
                 <Link href="/admin" className="p-2 hover:bg-gray-100 rounded-full">
                     <ArrowLeft size={24} />
@@ -98,7 +157,7 @@ export default function BillingPage() {
                 {/* Bill Details */}
                 <div className="md:col-span-2">
                     {selectedSeat && billData ? (
-                        <div className="bg-white p-8 rounded-xl shadow-md border">
+                        <div className="bg-white p-8 rounded-xl shadow-md border relative">
                             <div className="flex justify-between items-start mb-6 border-b pb-6">
                                 <div>
                                     <h2 className="text-2xl font-bold">Bill for Seat {selectedSeat}</h2>
@@ -116,19 +175,38 @@ export default function BillingPage() {
                                         <th className="text-center p-3">Qty</th>
                                         <th className="text-right p-3">Price</th>
                                         <th className="text-right p-3">Total</th>
+                                        <th className="text-right p-3 w-10"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y">
                                     {billData.items.map((item: any, idx: number) => (
-                                        <tr key={idx}>
+                                        <tr key={idx} className="group">
                                             <td className="p-3">{item.name}</td>
                                             <td className="text-center p-3 text-gray-600">x{item.quantity}</td>
                                             <td className="text-right p-3">₹{item.price}</td>
                                             <td className="text-right p-3 font-medium">₹{item.total}</td>
+                                            <td className="text-right p-3">
+                                                <button
+                                                    onClick={() => setItemToDelete(item.name)}
+                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Remove Item"
+                                                >
+                                                    <Trash2 size={20} />
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+
+                            <div className="flex justify-end mb-6">
+                                <button
+                                    onClick={() => setIsAddModalOpen(true)}
+                                    className="flex items-center gap-2 text-sm font-bold text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-lg transition-colors"
+                                >
+                                    <Plus size={16} /> Add Item
+                                </button>
+                            </div>
 
                             <div className="flex justify-between items-center pt-6 border-t-2 border-dashed border-gray-200">
                                 <div className="text-3xl font-bold">Total:</div>
@@ -157,6 +235,38 @@ export default function BillingPage() {
                                     )}
                                 </button>
                             </div>
+
+                            {/* Add Item Modal */}
+                            {isAddModalOpen && (
+                                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col animate-in zoom-in-95 duration-200">
+                                        <div className="flex justify-between items-center p-6 border-b">
+                                            <h3 className="text-xl font-bold">Add Item to Bill</h3>
+                                            <button onClick={() => setIsAddModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                                                <X size={24} />
+                                            </button>
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                                            {allProducts.map(product => (
+                                                <button
+                                                    key={product._id}
+                                                    onClick={() => handleAddItem(product._id)}
+                                                    className="w-full flex justify-between items-center p-4 hover:bg-orange-50 rounded-lg border border-gray-100 hover:border-orange-200 transition-colors group"
+                                                >
+                                                    <span className="font-medium text-lg">{product.name}</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-gray-500 font-medium">₹{product.price}</span>
+                                                        <div className="w-8 h-8 flex items-center justify-center bg-orange-100 text-orange-600 rounded-full">
+                                                            <Plus size={18} />
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                         </div>
                     ) : loading ? (
                         <div className="text-center py-12 text-gray-500">Loading bill data...</div>
