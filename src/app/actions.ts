@@ -636,6 +636,7 @@ export async function setPassword(password: string) {
             }
         );
 
+        revalidatePath('/admin', 'layout');
         return { success: true };
     } catch (error) {
         console.error("Set Password Error:", error);

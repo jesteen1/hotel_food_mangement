@@ -127,6 +127,7 @@ export default function SettingsPage() {
             if (res.success) {
                 setErrorPopup({ message: "Your login password has been set successfully.", type: 'success' });
                 setOwnerPassword('');
+                router.refresh();
             } else {
                 setErrorPopup({ message: res.error || "Failed to set password", type: 'error' });
             }
