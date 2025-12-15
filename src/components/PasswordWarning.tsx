@@ -11,8 +11,7 @@ export default function PasswordWarning() {
                     </div>
                     <div className="ml-3">
                         <p className="text-sm text-amber-700">
-                            <span className="font-bold">Security Alert:</span> You haven't set a login password yet.
-                            Please set one to secure your account.
+                            <span className="font-bold">Security Alert:</span> Please set one to secure your account.
                         </p>
                     </div>
                 </div>

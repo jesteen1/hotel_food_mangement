@@ -117,12 +117,24 @@ export async function updatePassword(role: string, newPass: string) {
         const email = await getOwnerEmail();
 
         // Use $set to update nested field
-        await Settings.findOneAndUpdate(
+        const updatedSettings = await Settings.findOneAndUpdate(
             { ownerEmail: email },
             { $set: { [`auth.${role}`]: newPass } },
             { upsert: true, new: true }
         );
 
+        // Check if ALL role passwords are secure (not default 'admin123')
+        const auth = updatedSettings.auth || {};
+        const roles = ['chief', 'inventory', 'billing', 'menu'];
+        const allSecure = roles.every(r => (auth as any)[r] && (auth as any)[r] !== 'admin123');
+
+        // Update User status based on security check
+        await User.findOneAndUpdate(
+            { email },
+            { hasSetPassword: allSecure }
+        );
+
+        revalidatePath('/admin', 'layout');
         return { success: true };
 
     } catch (error) {
