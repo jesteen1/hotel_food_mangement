@@ -211,7 +211,7 @@ export default function QRGeneratorClient() {
                         <div className="bg-white p-8 rounded-3xl border-2 border-orange-500 shadow-xl flex flex-col items-center qr-card">
                             <div className="text-center mb-6 no-print">
                                 <span className="text-xs font-black uppercase tracking-widest text-orange-600 bg-orange-50 px-4 py-1.5 rounded-full">Main Shop URL</span>
-                                <h3 className="text-2xl font-black mt-4">WELCOME</h3>
+                                <h3 className="text-2xl font-black mt-4 text-black">WELCOME</h3>
                             </div>
 
                             {/* PRINT-ONLY HEADER */}
@@ -250,7 +250,7 @@ export default function QRGeneratorClient() {
                             <div key={tableNo} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-md hover:border-orange-200 transition-colors qr-card shadow-gray-200/40 flex flex-col items-center">
                                 <div className="text-center mb-6 no-print">
                                     <span className="text-xs font-black uppercase tracking-widest text-gray-400 bg-gray-50 px-4 py-1.5 rounded-full">Specific Seat</span>
-                                    <h3 className="text-2xl font-black mt-4">TABLE #{tableNo}</h3>
+                                    <h3 className="text-2xl font-black mt-4 text-black">TABLE #{tableNo}</h3>
                                 </div>
 
                                 {/* PRINT-ONLY HEADER */}
