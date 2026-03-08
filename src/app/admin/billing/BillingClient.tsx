@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getBill, closeBill, getOrders, removeItemFromBill, addItemToBill, getProducts } from '@/app/actions';
-import { Printer, CheckCircle, ArrowLeft, Trash2, Plus, X } from 'lucide-react';
+import { Printer, CheckCircle, ArrowLeft, Trash2, Plus, X, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 export default function BillingPage() {
@@ -239,8 +239,8 @@ export default function BillingPage() {
                                     )}
                                 </div>
 
-                                <div className="flex justify-between items-center text-3xl font-bold mt-2">
-                                    <div>Total:</div>
+                                <div className="flex justify-between items-center text-4xl font-extrabold mt-4 pt-4 border-t-4 border-gray-100">
+                                    <div className="text-orange-600">Total:</div>
                                     <div className="text-orange-600">
                                         ₹{includeTax
                                             ? Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 1.18)
@@ -250,24 +250,24 @@ export default function BillingPage() {
                                 </div>
                             </div>
 
-                            <div className="mt-8 flex gap-4">
+                            <div className="mt-10 flex flex-col sm:flex-row gap-4">
                                 <button
                                     onClick={() => window.print()}
-                                    className="flex-1 flex justify-center items-center gap-2 py-3 bg-gray-100 font-bold rounded-lg hover:bg-gray-200"
+                                    className="flex-1 flex justify-center items-center gap-2 py-4 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
                                 >
-                                    <Printer size={20} /> Print Bill
+                                    <Printer size={22} /> Print Bill
                                 </button>
                                 <button
                                     onClick={handleCloseBill}
                                     disabled={closing}
-                                    className={`flex-1 flex justify-center items-center gap-2 py-3 text-white font-bold rounded-lg transition-colors ${closing ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                                    className={`flex-1 flex justify-center items-center gap-2 py-4 text-white font-black rounded-xl transition-all shadow-lg active:scale-95 ${closing ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
                                         }`}
                                 >
                                     {closing ? (
-                                        <span>Processing...</span>
+                                        <span className="flex items-center gap-2"><RefreshCw size={20} className="animate-spin" /> Processing...</span>
                                     ) : (
                                         <>
-                                            <CheckCircle size={20} /> Close & Paid
+                                            <CheckCircle size={22} /> Close & Paid
                                         </>
                                     )}
                                 </button>
