@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { listHotels } from '@/app/actions';
-import { Utensils, Search, ChevronRight } from 'lucide-react';
+import { Utensils, Search, ChevronRight, MapPin } from 'lucide-react';
 
 export default function CustomerExplore() {
     const [hotels, setHotels] = useState<any[]>([]);
@@ -78,7 +78,12 @@ export default function CustomerExplore() {
                                         <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
                                             {hotel.companyName || "Unnamed Hotel"}
                                         </h3>
-                                        <p className="text-sm text-gray-400">{hotel.email}</p>
+                                        {hotel.address && (
+                                            <p className="text-sm text-gray-400 mt-1 flex items-center gap-1 leading-none">
+                                                <MapPin size={12} className="text-orange-400" />
+                                                <span className="truncate max-w-[150px]">{hotel.address}</span>
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-orange-100 group-hover:text-orange-600 transition-all">
                                         <ChevronRight size={20} />

@@ -5,29 +5,37 @@ import { usePathname } from 'next/navigation';
 import { ShoppingCart, LayoutDashboard, Coffee, Box, Menu as MenuIcon, X, Receipt, Shield, Utensils } from 'lucide-react';
 import { useState } from 'react';
 import LogoutButton from './LogoutButton';
+import { useSession } from 'next-auth/react';
 
 export default function Navbar() {
     const pathname = usePathname();
+    const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
 
     const isActive = (path: string) => pathname === path;
 
-    const links = [
-        { href: '/customer', label: 'Customer', icon: Utensils },
-        { href: '/menu', label: 'Menu', icon: Coffee },
-        { href: '/cart', label: 'Cart', icon: ShoppingCart },
+    const isCustomerPath = pathname === '/customer' ||
+        pathname.startsWith('/customer/') ||
+        pathname === '/cart' ||
+        pathname === '/order-success' ||
+        pathname === '/menu'; // Menu is also primarily for customers
+
+    if (isCustomerPath) return null;
+
+    // Links shown to everyone when NOT on a customer path
+    const publicLinks = [
+        { href: '/customer', label: 'Explore Shop', icon: Utensils },
+    ];
+
+    // Links shown ONLY to staff/owners
+    const adminLinks = [
         { href: '/admin/kitchen', label: 'Chief', icon: LayoutDashboard },
         { href: '/admin/inventory', label: 'Inventory', icon: Box },
         { href: '/admin/billing', label: 'Billing', icon: Receipt },
         { href: '/admin/settings', label: 'Admin', icon: Shield },
     ];
 
-    const isCustomerPath = pathname === '/customer' ||
-        pathname.startsWith('/customer/') ||
-        pathname === '/cart' ||
-        pathname === '/order-success';
-
-    if (isCustomerPath) return null;
+    const links = session?.user ? [...publicLinks, ...adminLinks] : publicLinks;
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
@@ -59,9 +67,19 @@ export default function Navbar() {
                                 </Link>
                             );
                         })}
-                        <div className="pl-2 border-l border-gray-200 ml-2">
-                            <LogoutButton />
-                        </div>
+                        {session?.user && (
+                            <div className="pl-2 border-l border-gray-200 ml-2">
+                                <LogoutButton />
+                            </div>
+                        )}
+                        {!session?.user && !pathname.includes('/login') && (
+                            <Link
+                                href="/login"
+                                className="px-4 py-2 text-sm font-bold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
+                            >
+                                Staff Login
+                            </Link>
+                        )}
                     </div>
 
                     {/* Mobile menu button */}
@@ -116,9 +134,21 @@ export default function Navbar() {
                                 </Link>
                             );
                         })}
-                        <div className="pt-4 mt-4 border-t border-gray-100">
-                            <LogoutButton />
-                        </div>
+                        {session?.user && (
+                            <div className="pt-4 mt-4 border-t border-gray-100">
+                                <LogoutButton />
+                            </div>
+                        )}
+                        {!session?.user && (
+                            <Link
+                                href="/login"
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-3 px-4 py-3 rounded-xl text-lg font-bold text-white bg-orange-600 shadow-md"
+                            >
+                                <Shield size={20} />
+                                Staff Login
+                            </Link>
+                        )}
                     </div>
 
                     <div className="pt-6 border-t border-gray-100 bg-white">
