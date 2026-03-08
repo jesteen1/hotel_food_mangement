@@ -21,10 +21,11 @@ async function test() {
         console.log("Creating default settings for test user...");
         settings = await Settings.create({ ownerEmail: testUser.email });
     }
-    console.log(`Current Access Code: ${settings.accessCode}`);
+    const latestCode = settings.accessCodes[settings.accessCodes.length - 1];
+    console.log(`Current Access Code: ${latestCode}`);
 
     // 3. Test verifyAccessCode
-    const validResult = await verifyAccessCode(testUser.email, settings.accessCode);
+    const validResult = await verifyAccessCode(testUser.email, latestCode);
     console.log(`Verify Valid Code: ${validResult.success ? "PASSED" : "FAILED"}`);
 
     const invalidResult = await verifyAccessCode(testUser.email, "WRONG123");
