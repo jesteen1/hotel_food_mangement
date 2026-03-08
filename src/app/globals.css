@@ -26,16 +26,25 @@ body {
 }
 
 /* Force all input and textarea text to strictly black */
+input,
+textarea,
+select,
 input[type="text"],
 input[type="password"],
 input[type="email"],
 input[type="number"],
 input[type="tel"],
 input[type="url"],
-input[type="search"],
-textarea,
-select {
+input[type="search"] {
   color: black !important;
+}
+
+/* Specific override to keep orange text orange across all themes */
+[class*="text-orange-"],
+.text-orange-500,
+.text-orange-600 {
+  color: #ea580c !important;
+  /* Tailwind orange-600 */
 }
 
 @media print {
@@ -89,14 +98,6 @@ select {
   textarea,
   label {
     color: black !important;
-  }
-
-  /* Specific override to keep orange text orange */
-  [class*="text-orange-"],
-  .text-orange-500,
-  .text-orange-600 {
-    color: #ea580c !important;
-    /* Tailwind orange-600 */
   }
 
   /* Ensure background remains white for all printed elements */
