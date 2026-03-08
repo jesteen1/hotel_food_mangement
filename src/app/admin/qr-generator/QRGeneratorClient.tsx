@@ -300,6 +300,8 @@ export default function QRGeneratorClient() {
                         min-height: 0 !important;
                         display: block !important;
                         visibility: visible !important;
+                        color: black !important;
+                        color-scheme: light !important;
                     }
                     nav { display: none !important; }
                     .print-container {

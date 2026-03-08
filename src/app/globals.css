@@ -26,6 +26,12 @@ body {
 }
 
 @media print {
+  :root {
+    --background: #ffffff !important;
+    --foreground: #171717 !important;
+    color-scheme: light !important;
+  }
+
   .no-print {
     display: none !important;
   }
@@ -38,7 +44,7 @@ body {
     /* Slightly less than 80mm to avoid clipping */
     margin: 0;
     padding: 4mm;
-    color: black;
-    background: white;
+    color: black !important;
+    background: white !important;
   }
 }
