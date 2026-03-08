@@ -114,216 +114,219 @@ export default function BillingPage() {
     };
 
     return (
-        <div className="p-6 max-w-6xl mx-auto no-print">
-            {/* Delete Confirmation Modal */}
-            {itemToDelete && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full animate-in zoom-in-95 duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Remove Item?</h3>
-                        <p className="text-gray-500 mb-6">Are you sure you want to remove <span className="font-bold text-gray-900">{itemToDelete}</span> from the bill?</p>
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setItemToDelete(null)}
-                                className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmRemoveItem}
-                                className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700"
-                            >
-                                Remove
-                            </button>
+        <div className="p-6 max-w-6xl mx-auto">
+            <div className="no-print">
+                {/* Delete Confirmation Modal */}
+                {itemToDelete && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full animate-in zoom-in-95 duration-200">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Remove Item?</h3>
+                            <p className="text-gray-500 mb-6">Are you sure you want to remove <span className="font-bold text-gray-900">{itemToDelete}</span> from the bill?</p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setItemToDelete(null)}
+                                    className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmRemoveItem}
+                                    className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700"
+                                >
+                                    Remove
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            <div className="flex items-center gap-4 mb-8">
-                <Link href="/admin" className="p-2 hover:bg-gray-100 rounded-full">
-                    <ArrowLeft size={24} />
-                </Link>
-                <h1 className="text-3xl font-bold text-orange-600">Billing Dashboard</h1>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Seat List */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border h-fit">
-                    <h2 className="font-bold text-xl mb-4 text-orange-600">Active Seats</h2>
-                    {activeSeats.length === 0 ? (
-                        <p className="text-gray-900 font-medium bg-gray-50 p-4 rounded-lg border border-dashed border-gray-200">No active bills (Completed orders).</p>
-                    ) : (
-                        <div className="space-y-2">
-                            {activeSeats.map(seat => (
-                                <button
-                                    key={seat}
-                                    onClick={() => handleSelectSeat(seat)}
-                                    className={`w-full text-left p-3 rounded-xl border-2 transition-all shadow-sm ${selectedSeat === seat
-                                        ? 'bg-orange-500 border-orange-600 text-white font-black shadow-orange-100'
-                                        : 'bg-white border-gray-100 text-gray-900 font-bold hover:border-orange-200 hover:bg-orange-50/30'
-                                        }`}
-                                >
-                                    Seat {seat}
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                <div className="flex items-center gap-4 mb-8">
+                    <Link href="/admin" className="p-2 hover:bg-gray-100 rounded-full">
+                        <ArrowLeft size={24} />
+                    </Link>
+                    <h1 className="text-3xl font-bold text-orange-600">Billing Dashboard</h1>
                 </div>
 
-                {/* Bill Details */}
-                <div className="md:col-span-2">
-                    {selectedSeat && billData ? (
-                        <div id="printable-receipt" className="bg-white p-8 rounded-xl shadow-md border relative">
-                            <div className="flex justify-between items-start mb-6 border-b-2 pb-6 border-gray-900">
-                                <div className="print-header">
-                                    <h1 className="text-3xl font-black uppercase text-black mb-1">{hotelProfile?.companyName || billData?.companyName || 'FoodBook'}</h1>
-                                    <p className="text-gray-900 font-bold">Bill for Seat <span className="text-orange-600">{selectedSeat}</span></p>
-                                    <p className="text-gray-900 font-medium">Total Orders: {billData.ordersCount}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm text-gray-900 font-bold">Date: {new Date().toLocaleDateString()}</p>
-                                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* Seat List */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border h-fit">
+                        <h2 className="font-bold text-xl mb-4 text-orange-600">Active Seats</h2>
+                        {activeSeats.length === 0 ? (
+                            <p className="text-gray-900 font-medium bg-gray-50 p-4 rounded-lg border border-dashed border-gray-200">No active bills (Completed orders).</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {activeSeats.map(seat => (
+                                    <button
+                                        key={seat}
+                                        onClick={() => handleSelectSeat(seat)}
+                                        className={`w-full text-left p-3 rounded-xl border-2 transition-all shadow-sm ${selectedSeat === seat
+                                            ? 'bg-orange-500 border-orange-600 text-white font-black shadow-orange-100'
+                                            : 'bg-white border-gray-100 text-gray-900 font-bold hover:border-orange-200 hover:bg-orange-50/30'
+                                            }`}
+                                    >
+                                        Seat {seat}
+                                    </button>
+                                ))}
                             </div>
+                        )}
+                    </div>
 
-                            <table className="w-full mb-8 border-collapse">
-                                <thead className="bg-gray-100 border-b-2 border-gray-200">
-                                    <tr>
-                                        <th className="text-left p-3 text-gray-900 font-black uppercase">Item</th>
-                                        <th className="text-center p-3 text-gray-900 font-black uppercase">Qty</th>
-                                        <th className="text-right p-3 text-gray-900 font-black uppercase">Price</th>
-                                        <th className="text-right p-3 text-gray-900 font-black uppercase">Total</th>
-                                        <th className="text-right p-3 w-10"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {billData.items.map((item: any, idx: number) => (
-                                        <tr key={idx} className="group hover:bg-gray-50">
-                                            <td className="p-3 text-gray-900 font-bold">{item.name}</td>
-                                            <td className="text-center p-3 text-gray-900 font-black">x{item.quantity}</td>
-                                            <td className="text-right p-3 text-gray-900 font-bold">₹{item.price}</td>
-                                            <td className="text-right p-3 text-gray-900 font-black">₹{item.total}</td>
-                                            <td className="text-right p-3">
-                                                <button
-                                                    onClick={() => setItemToDelete(item.name)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors shadow-sm"
-                                                    title="Remove Item"
-                                                >
-                                                    <Trash2 size={20} />
-                                                </button>
-                                            </td>
+                    {/* Bill Details */}
+                    <div className="md:col-span-2">
+                        {selectedSeat && billData ? (
+                            <div id="onscreen-receipt" className="bg-white p-8 rounded-xl shadow-md border relative">
+                                <div className="flex justify-between items-start mb-6 border-b-2 pb-6 border-gray-900">
+                                    <div className="print-header">
+                                        <h1 className="text-3xl font-black uppercase text-black mb-1">{hotelProfile?.companyName || billData?.companyName || 'FoodBook'}</h1>
+                                        <p className="text-gray-900 font-bold">Bill for Seat <span className="text-orange-600">{selectedSeat}</span></p>
+                                        <p className="text-gray-900 font-medium">Total Orders: {billData.ordersCount}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm text-gray-900 font-bold">Date: {new Date().toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+
+                                <table className="w-full mb-8 border-collapse">
+                                    <thead className="bg-gray-100 border-b-2 border-gray-200">
+                                        <tr>
+                                            <th className="text-left p-3 text-gray-900 font-black uppercase">Item</th>
+                                            <th className="text-center p-3 text-gray-900 font-black uppercase">Qty</th>
+                                            <th className="text-right p-3 text-gray-900 font-black uppercase">Price</th>
+                                            <th className="text-right p-3 text-gray-900 font-black uppercase">Total</th>
+                                            <th className="text-right p-3 w-10"></th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {billData.items.map((item: any, idx: number) => (
+                                            <tr key={idx} className="group hover:bg-gray-50">
+                                                <td className="p-3 text-gray-900 font-bold">{item.name}</td>
+                                                <td className="text-center p-3 text-gray-900 font-black">x{item.quantity}</td>
+                                                <td className="text-right p-3 text-gray-900 font-bold">₹{item.price}</td>
+                                                <td className="text-right p-3 text-gray-900 font-black">₹{item.total}</td>
+                                                <td className="text-right p-3">
+                                                    <button
+                                                        onClick={() => setItemToDelete(item.name)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors shadow-sm"
+                                                        title="Remove Item"
+                                                    >
+                                                        <Trash2 size={20} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
 
-                            <div className="flex justify-end mb-6">
-                                <button
-                                    onClick={() => setIsAddModalOpen(true)}
-                                    className="flex items-center gap-2 text-sm font-bold text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-lg transition-colors"
-                                >
-                                    <Plus size={16} /> Add Item
-                                </button>
-                            </div>
-
-                            <div className="flex flex-col gap-4 border-t-2 border-dashed border-gray-200 pt-6">
-                                <div className="flex justify-between items-center text-gray-900">
-                                    <span className="font-medium">Subtotal:</span>
-                                    <span className="font-bold">₹{billData.items.reduce((sum: number, item: any) => sum + item.total, 0)}</span>
+                                <div className="flex justify-end mb-6">
+                                    <button
+                                        onClick={() => setIsAddModalOpen(true)}
+                                        className="flex items-center gap-2 text-sm font-bold text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-lg transition-colors"
+                                    >
+                                        <Plus size={16} /> Add Item
+                                    </button>
                                 </div>
 
-                                <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="checkbox"
-                                            id="adminTaxToggle"
-                                            checked={includeTax}
-                                            onChange={(e) => setIncludeTax(e.target.checked)}
-                                            className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300"
-                                        />
-                                        <label htmlFor="adminTaxToggle" className="text-gray-900 font-bold cursor-pointer underline decoration-orange-200">Include 18% GST</label>
+                                <div className="flex flex-col gap-4 border-t-2 border-dashed border-gray-200 pt-6">
+                                    <div className="flex justify-between items-center text-gray-900">
+                                        <span className="font-medium">Subtotal:</span>
+                                        <span className="font-bold">₹{billData.items.reduce((sum: number, item: any) => sum + item.total, 0)}</span>
                                     </div>
-                                    {includeTax && (
-                                        <span className="font-bold text-gray-900">+₹{Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 0.18)}</span>
-                                    )}
-                                </div>
 
-                                <div className="flex justify-between items-center text-4xl font-extrabold mt-4 pt-4 border-t-4 border-gray-100">
-                                    <div className="text-orange-600">Total:</div>
-                                    <div className="text-orange-600">
-                                        ₹{includeTax
-                                            ? Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 1.18)
-                                            : billData.items.reduce((sum: number, item: any) => sum + item.total, 0)
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                                <button
-                                    onClick={() => window.print()}
-                                    className="flex-1 flex justify-center items-center gap-2 py-4 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
-                                >
-                                    <Printer size={22} /> Print Bill
-                                </button>
-                                <button
-                                    onClick={handleCloseBill}
-                                    disabled={closing}
-                                    className={`flex-1 flex justify-center items-center gap-2 py-4 text-white font-black rounded-xl transition-all shadow-lg active:scale-95 ${closing ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
-                                        }`}
-                                >
-                                    {closing ? (
-                                        <span className="flex items-center gap-2"><RefreshCw size={20} className="animate-spin" /> Processing...</span>
-                                    ) : (
-                                        <>
-                                            <CheckCircle size={22} /> Close & Paid
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-
-                            {/* Add Item Modal */}
-                            {isAddModalOpen && (
-                                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col animate-in zoom-in-95 duration-200">
-                                        <div className="flex justify-between items-center p-6 border-b">
-                                            <h3 className="text-xl font-black text-gray-900">Add Item to Bill</h3>
-                                            <button onClick={() => setIsAddModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
-                                                <X size={24} />
-                                            </button>
+                                    <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id="adminTaxToggle"
+                                                checked={includeTax}
+                                                onChange={(e) => setIncludeTax(e.target.checked)}
+                                                className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300"
+                                            />
+                                            <label htmlFor="adminTaxToggle" className="text-gray-900 font-bold cursor-pointer underline decoration-orange-200">Include 18% GST</label>
                                         </div>
-                                        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                                            {allProducts.map(product => (
-                                                <button
-                                                    key={product._id}
-                                                    onClick={() => handleAddItem(product._id)}
-                                                    className="w-full flex justify-between items-center p-4 hover:bg-orange-50 rounded-lg border border-gray-100 hover:border-orange-200 transition-colors group"
-                                                >
-                                                    <span className="font-bold text-lg text-gray-900 group-hover:text-black">{product.name}</span>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-gray-900 font-bold">₹{product.price}</span>
-                                                        <div className="w-8 h-8 flex items-center justify-center bg-orange-100 text-orange-600 rounded-full">
-                                                            <Plus size={18} />
-                                                        </div>
-                                                    </div>
+                                        {includeTax && (
+                                            <span className="font-bold text-gray-900">+₹{Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 0.18)}</span>
+                                        )}
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-4xl font-extrabold mt-4 pt-4 border-t-4 border-gray-100">
+                                        <div className="text-orange-600">Total:</div>
+                                        <div className="text-orange-600">
+                                            ₹{includeTax
+                                                ? Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 1.18)
+                                                : billData.items.reduce((sum: number, item: any) => sum + item.total, 0)
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                                    <button
+                                        onClick={() => window.print()}
+                                        className="flex-1 flex justify-center items-center gap-2 py-4 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
+                                    >
+                                        <Printer size={22} /> Print Bill
+                                    </button>
+                                    <button
+                                        onClick={handleCloseBill}
+                                        disabled={closing}
+                                        className={`flex-1 flex justify-center items-center gap-2 py-4 text-white font-black rounded-xl transition-all shadow-lg active:scale-95 ${closing ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                                            }`}
+                                    >
+                                        {closing ? (
+                                            <span className="flex items-center gap-2"><RefreshCw size={20} className="animate-spin" /> Processing...</span>
+                                        ) : (
+                                            <>
+                                                <CheckCircle size={22} /> Close & Paid
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+
+                                {/* Add Item Modal */}
+                                {isAddModalOpen && (
+                                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                                        <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col animate-in zoom-in-95 duration-200">
+                                            <div className="flex justify-between items-center p-6 border-b">
+                                                <h3 className="text-xl font-black text-gray-900">Add Item to Bill</h3>
+                                                <button onClick={() => setIsAddModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                                                    <X size={24} />
                                                 </button>
-                                            ))}
+                                            </div>
+                                            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                                                {allProducts.map(product => (
+                                                    <button
+                                                        key={product._id}
+                                                        onClick={() => handleAddItem(product._id)}
+                                                        className="w-full flex justify-between items-center p-4 hover:bg-orange-50 rounded-lg border border-gray-100 hover:border-orange-200 transition-colors group"
+                                                    >
+                                                        <span className="font-bold text-lg text-gray-900 group-hover:text-black">{product.name}</span>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-gray-900 font-bold">₹{product.price}</span>
+                                                            <div className="w-8 h-8 flex items-center justify-center bg-orange-100 text-orange-600 rounded-full">
+                                                                <Plus size={18} />
+                                                            </div>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                        </div>
-                    ) : loading ? (
-                        <div className="text-center py-12 text-gray-500">Loading bill data...</div>
-                    ) : (
-                        <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-400">
-                            Select a seat to view the bill
-                        </div>
-                    )}
+                            </div>
+                        ) : loading ? (
+                            <div className="text-center py-12 text-gray-500">Loading bill data...</div>
+                        ) : (
+                            <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-400">
+                                Select a seat to view the bill
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
+
             {/* Printable Receipt Section - Hidden on Screen */}
-            <div id="printable-receipt" className="hidden print:block bg-white text-black font-mono text-sm leading-tight">
+            <div id="printable-receipt" className="bg-white text-black font-mono text-sm leading-tight">
                 {selectedSeat && billData && (
                     <div className="flex flex-col items-center w-full bg-white text-black">
                         {/* Header */}

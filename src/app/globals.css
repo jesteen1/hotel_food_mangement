@@ -57,84 +57,66 @@ table th,
   /* Tailwind orange-600 */
 }
 
+/* Hidden on screen by default */
+#printable-receipt {
+  display: none;
+}
+
 @media print {
   @page {
     margin: 0;
     size: auto;
   }
 
-  /* Force display of main container and receipt, hide everything else */
-  html,
-  body {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  /* Robust hiding logic */
-  body>*:not(main),
-  main> :not(#printable-receipt),
-  nav,
+  /* Robust hiding logic for screen elements */
   .no-print,
+  .print-hide,
+  nav,
   #navbar-root,
-  .print-hide {
+  .min-h-screen.bg-gray-50>nav {
     display: none !important;
   }
 
-  main,
+  /* Show and style the receipt */
   #printable-receipt {
     display: block !important;
     visibility: visible !important;
-  }
-
-  #printable-receipt {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 15mm;
-    box-shadow: none !important;
-    border: none !important;
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm !important;
     background: white !important;
     color: black !important;
     z-index: 9999;
   }
 
-  /* Force all nested text and borders to black and background to white */
+  /* Force all nested text and borders to black */
   #printable-receipt,
   #printable-receipt * {
     color: black !important;
-    background: white !important;
+    background: transparent !important;
     border-color: #000 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Specifically force the receipt container to have a white background */
-  #printable-receipt {
-    background: white !important;
-    color: black !important;
-  }
-
   /* Professional text sizing for receipts */
-  .text-4xl {
+  #printable-receipt .text-4xl {
     font-size: 24pt !important;
     font-weight: 900 !important;
   }
 
-  .text-3xl {
+  #printable-receipt .text-3xl {
     font-size: 18pt !important;
     font-weight: 900 !important;
   }
 
-  .text-2xl {
+  #printable-receipt .text-2xl {
     font-size: 16pt !important;
     font-weight: 800 !important;
   }
 
-  .text-xl {
+  #printable-receipt .text-xl {
     font-size: 14pt !important;
     font-weight: 700 !important;
   }
