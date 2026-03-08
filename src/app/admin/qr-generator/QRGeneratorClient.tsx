@@ -217,12 +217,12 @@ export default function QRGeneratorClient() {
                             {/* PRINT-ONLY HEADER */}
                             <div className="hidden print:block text-center mb-4">
                                 <div className="text-sm font-black text-orange-600 tracking-tighter mb-1">FOODBOOK APP</div>
-                                <div className="text-2xl font-black">WELCOME</div>
-                                <div className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-widest">Scan to View Menu</div>
+                                <div className="text-2xl font-black text-black">WELCOME</div>
+                                <div className="text-[10px] text-black font-bold mt-1 uppercase tracking-widest">Scan to View Menu</div>
                             </div>
 
                             <div className="aspect-square bg-white rounded-2xl flex items-center justify-center p-4 mb-6 border border-gray-100 print:border-none print:p-0">
-                                <QRCodeSVG id="qr-main" value={shopUrl} size={280} level="H" includeMargin />
+                                <QRCodeSVG id="qr-main" value={shopUrl} size={280} level="H" includeMargin fgColor="#000000" bgColor="#ffffff" />
                             </div>
 
                             <div className="w-full flex items-center justify-between no-print">
@@ -237,7 +237,7 @@ export default function QRGeneratorClient() {
 
                             {/* PRINT-ONLY FOOTER */}
                             <div className="hidden print:block text-center mt-2">
-                                <p className="text-[9px] font-mono text-gray-400">{shopUrl}</p>
+                                <p className="text-[9px] font-mono text-black">{shopUrl}</p>
                             </div>
                         </div>
                     )}
@@ -256,12 +256,12 @@ export default function QRGeneratorClient() {
                                 {/* PRINT-ONLY HEADER */}
                                 <div className="hidden print:block text-center mb-4">
                                     <div className="text-sm font-black text-orange-600 tracking-tighter mb-1">FOODBOOK APP</div>
-                                    <div className="text-2xl font-black">TABLE {tableNo}</div>
-                                    <div className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-widest">Scan to Order Food</div>
+                                    <div className="text-2xl font-black text-black">TABLE {tableNo}</div>
+                                    <div className="text-[10px] text-black font-bold mt-1 uppercase tracking-widest">Scan to Order Food</div>
                                 </div>
 
                                 <div className="aspect-square bg-white rounded-2xl flex items-center justify-center p-4 border border-gray-100 print:border-none print:p-0">
-                                    <QRCodeSVG id={qrId} value={tableUrl} size={260} level="H" includeMargin />
+                                    <QRCodeSVG id={qrId} value={tableUrl} size={260} level="H" includeMargin fgColor="#000000" bgColor="#ffffff" />
                                 </div>
 
                                 <div className="w-full mt-6 flex items-center justify-between no-print">
@@ -276,8 +276,8 @@ export default function QRGeneratorClient() {
 
                                 {/* PRINT-ONLY FOOTER */}
                                 <div className="hidden print:block text-center mt-4">
-                                    <p className="text-[9px] font-mono text-gray-400">{tableUrl}</p>
-                                    <div className="mt-4 border-t border-gray-100 pt-2 text-[8px] text-gray-300">Cut along the dotted line</div>
+                                    <p className="text-[9px] font-mono text-black">{tableUrl}</p>
+                                    <div className="mt-4 border-t border-black/10 pt-2 text-[8px] text-black">Cut along the dotted line</div>
                                 </div>
                             </div>
                         );

@@ -47,4 +47,55 @@ body {
     color: black !important;
     background: white !important;
   }
+
+  /* Force high contrast black/white/orange theme across ALL pages */
+  body * {
+    border-color: black !important;
+    outline-color: black !important;
+  }
+
+  /* Force all text to black by default, but permit orange branding */
+  p,
+  span,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  td,
+  th,
+  div,
+  a,
+  li,
+  b,
+  i,
+  strong,
+  em,
+  input,
+  textarea,
+  label {
+    color: black !important;
+  }
+
+  /* Specific override to keep orange text orange */
+  [class*="text-orange-"],
+  .text-orange-500,
+  .text-orange-600 {
+    color: #ea580c !important;
+    /* Tailwind orange-600 */
+  }
+
+  /* Ensure background remains white for all printed elements */
+  body,
+  main,
+  section,
+  article,
+  div,
+  table,
+  tr,
+  td,
+  th {
+    background-color: white !important;
+  }
 }
