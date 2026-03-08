@@ -63,24 +63,18 @@ table th,
     size: auto;
   }
 
+  /* Force display of main container and receipt, hide everything else */
+  html,
   body {
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
-  /* Hide everything by default, then show ONLY the receipt */
-  body>* {
-    display: none !important;
-  }
-
-  /* Force display of the root/main structure but hide its children */
-  #__next,
-  body,
-  main {
-    display: block !important;
-  }
-
-  /* Specific elements to stay hidden */
+  /* Robust hiding logic */
+  body>*:not(main),
+  main> :not(#printable-receipt),
   nav,
   .no-print,
   #navbar-root,
@@ -88,44 +82,59 @@ table th,
     display: none !important;
   }
 
-  /* The actual receipt container */
+  main,
   #printable-receipt {
     display: block !important;
+    visibility: visible !important;
+  }
+
+  #printable-receipt {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     margin: 0;
-    padding: 10mm;
+    padding: 15mm;
     box-shadow: none !important;
     border: none !important;
     background: white !important;
     color: black !important;
+    z-index: 9999;
   }
 
-  /* Scale items for thermal printer or standard A4 */
+  /* Force all nested text and borders to black */
+  #printable-receipt * {
+    color: black !important;
+    background: transparent !important;
+    border-color: #000 !important;
+  }
+
+  /* Professional text sizing for receipts */
   .text-4xl {
     font-size: 24pt !important;
+    font-weight: 900 !important;
   }
 
   .text-3xl {
     font-size: 18pt !important;
+    font-weight: 900 !important;
   }
 
   .text-2xl {
     font-size: 16pt !important;
+    font-weight: 800 !important;
   }
 
-  /* Force all borders and text to black */
-  * {
-    color: black !important;
-    border-color: #000 !important;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
+  .text-xl {
+    font-size: 14pt !important;
+    font-weight: 700 !important;
   }
+}
 
-  /* Exception for orange total if needed, but usually better in black for receipts */
-  .text-orange-600 {
-    color: black !important;
-  }
+/* HIGH CONTRAST MODAL: Ensure 'Add Item' modal is visible in all themes */
+[class*="bg-black/50"] .bg-white h3,
+[class*="bg-black/50"] .bg-white span,
+[class*="bg-black/50"] .bg-white p {
+  color: #111827 !important;
+  /* gray-900 */
 }

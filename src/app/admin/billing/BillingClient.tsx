@@ -286,7 +286,7 @@ export default function BillingPage() {
                                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                                     <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col animate-in zoom-in-95 duration-200">
                                         <div className="flex justify-between items-center p-6 border-b">
-                                            <h3 className="text-xl font-bold">Add Item to Bill</h3>
+                                            <h3 className="text-xl font-black text-gray-900">Add Item to Bill</h3>
                                             <button onClick={() => setIsAddModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
                                                 <X size={24} />
                                             </button>
@@ -298,9 +298,9 @@ export default function BillingPage() {
                                                     onClick={() => handleAddItem(product._id)}
                                                     className="w-full flex justify-between items-center p-4 hover:bg-orange-50 rounded-lg border border-gray-100 hover:border-orange-200 transition-colors group"
                                                 >
-                                                    <span className="font-medium text-lg">{product.name}</span>
+                                                    <span className="font-bold text-lg text-gray-900 group-hover:text-black">{product.name}</span>
                                                     <div className="flex items-center gap-3">
-                                                        <span className="text-gray-500 font-medium">₹{product.price}</span>
+                                                        <span className="text-gray-900 font-bold">₹{product.price}</span>
                                                         <div className="w-8 h-8 flex items-center justify-center bg-orange-100 text-orange-600 rounded-full">
                                                             <Plus size={18} />
                                                         </div>
