@@ -88,7 +88,7 @@ export default function QRGeneratorClient() {
                     >
                         <Minus size={24} />
                     </button>
-                    <span className="w-20 text-center text-4xl">{tableCount}</span>
+                    <span className="w-20 text-center text-4xl text-orange-600 font-black">{tableCount}</span>
                     <button
                         onClick={() => setTableCount(tableCount + 1)}
                         className="w-14 h-14 flex items-center justify-center bg-white rounded-xl shadow-sm hover:text-orange-600 transition-colors"

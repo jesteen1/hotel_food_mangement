@@ -98,7 +98,7 @@ export default function AdminOrderList({ initialOrders }: { initialOrders: Order
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Seat</span>
-                                    <h3 className="text-2xl font-bold text-gray-900">{order.seatNumber}</h3>
+                                    <h3 className="text-2xl font-bold text-orange-600">{order.seatNumber}</h3>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(order.status)}`}>
                                     {order.status}

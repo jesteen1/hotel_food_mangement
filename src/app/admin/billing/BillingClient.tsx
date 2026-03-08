@@ -159,7 +159,7 @@ export default function BillingPage() {
                         <div className="bg-white p-8 rounded-xl shadow-md border relative">
                             <div className="flex justify-between items-start mb-6 border-b pb-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold">Bill for Seat {selectedSeat}</h2>
+                                    <h2 className="text-2xl font-bold">Bill for Seat <span className="text-orange-600">{selectedSeat}</span></h2>
                                     <p className="text-gray-500">Total Orders: {billData.ordersCount}</p>
                                 </div>
                                 <div className="text-right">
