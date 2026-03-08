@@ -42,7 +42,7 @@ export default function QRGeneratorClient() {
             const res = await updateAccessCode();
             if (res.success && res.accessCode) {
                 setAccessCode(res.accessCode);
-                setAllCodes(prev => [...prev, res.accessCode]);
+                setAllCodes([res.accessCode]);
             }
         } catch (err) {
             console.error("Failed to randomize code", err);
@@ -176,11 +176,11 @@ export default function QRGeneratorClient() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 print:block print:w-full">
                 <div className="lg:col-span-1 space-y-6 no-print">
                     <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50">
-                        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                            <Info size={20} className="text-blue-500" /> Shop Security
+                        <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-orange-600">
+                            <Info size={20} className="text-orange-500" /> Shop Security
                         </h2>
                         <div className="mb-6">
-                            <label className="block text-sm font-semibold text-gray-400 uppercase tracking-widest mb-3">Current Access Code</label>
+                            <label className="block text-sm font-semibold text-orange-400 uppercase tracking-widest mb-3">Current Access Code</label>
                             <div className="flex items-center gap-3">
                                 <div className="flex-1 bg-gray-50 text-3xl font-black tracking-widest px-6 py-4 rounded-2xl border-2 border-dashed border-gray-200 text-center text-orange-600">
                                     {accessCode}

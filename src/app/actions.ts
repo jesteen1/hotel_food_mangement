@@ -751,7 +751,7 @@ export async function updateAccessCode(newCode?: string) {
 
         await Settings.findOneAndUpdate(
             { ownerEmail: email },
-            { $push: { accessCodes: accessCode } },
+            { $set: { accessCodes: [accessCode] } },
             { upsert: true }
         );
 
