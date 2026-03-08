@@ -169,35 +169,35 @@ export default function BillingPage() {
                         <div className="bg-white p-8 rounded-xl shadow-md border relative">
                             <div className="flex justify-between items-start mb-6 border-b pb-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold">Bill for Seat <span className="text-orange-600">{selectedSeat}</span></h2>
-                                    <p className="text-gray-500">Total Orders: {billData.ordersCount}</p>
+                                    <h2 className="text-2xl font-bold text-gray-900">Bill for Seat <span className="text-orange-600">{selectedSeat}</span></h2>
+                                    <p className="text-gray-900 font-medium">Total Orders: {billData.ordersCount}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm text-gray-400">Date: {new Date().toLocaleDateString()}</p>
+                                    <p className="text-sm text-gray-900 font-bold">Date: {new Date().toLocaleDateString()}</p>
                                 </div>
                             </div>
 
-                            <table className="w-full mb-8">
-                                <thead className="bg-gray-50">
+                            <table className="w-full mb-8 border-collapse">
+                                <thead className="bg-gray-100 border-b-2 border-gray-200">
                                     <tr>
-                                        <th className="text-left p-3">Item</th>
-                                        <th className="text-center p-3">Qty</th>
-                                        <th className="text-right p-3">Price</th>
-                                        <th className="text-right p-3">Total</th>
+                                        <th className="text-left p-3 text-gray-900 font-black uppercase">Item</th>
+                                        <th className="text-center p-3 text-gray-900 font-black uppercase">Qty</th>
+                                        <th className="text-right p-3 text-gray-900 font-black uppercase">Price</th>
+                                        <th className="text-right p-3 text-gray-900 font-black uppercase">Total</th>
                                         <th className="text-right p-3 w-10"></th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y">
+                                <tbody className="divide-y divide-gray-200">
                                     {billData.items.map((item: any, idx: number) => (
-                                        <tr key={idx} className="group">
-                                            <td className="p-3">{item.name}</td>
-                                            <td className="text-center p-3 text-gray-600">x{item.quantity}</td>
-                                            <td className="text-right p-3">₹{item.price}</td>
-                                            <td className="text-right p-3 font-medium">₹{item.total}</td>
+                                        <tr key={idx} className="group hover:bg-gray-50">
+                                            <td className="p-3 text-gray-900 font-bold">{item.name}</td>
+                                            <td className="text-center p-3 text-gray-900 font-black">x{item.quantity}</td>
+                                            <td className="text-right p-3 text-gray-900 font-bold">₹{item.price}</td>
+                                            <td className="text-right p-3 text-gray-900 font-black">₹{item.total}</td>
                                             <td className="text-right p-3">
                                                 <button
                                                     onClick={() => setItemToDelete(item.name)}
-                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors shadow-sm"
                                                     title="Remove Item"
                                                 >
                                                     <Trash2 size={20} />

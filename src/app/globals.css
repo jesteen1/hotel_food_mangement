@@ -39,6 +39,16 @@ input[type="search"] {
   color: black !important;
 }
 
+/* HIGH CONTRAST: Ensure table content and specific billing text is always visible */
+.high-contrast-text,
+table td,
+table th,
+.bill-content p,
+.bill-content span {
+  color: #1a1a1a !important;
+  /* Very dark gray/black */
+}
+
 /* Specific override to keep orange text orange across all themes */
 [class*="text-orange-"],
 .text-orange-500,
