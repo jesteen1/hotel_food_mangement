@@ -93,7 +93,7 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
                             <Lock size={32} />
                         </div>
                         <h1 className="text-2xl font-bold">Access Code Required</h1>
-                        <p className="text-orange-100 mt-2">Please enter the access code provided by the shop.</p>
+                        <p className="text-white mt-2">Please enter the access code provided by the shop.</p>
                     </div>
 
                     <form onSubmit={handleVerify} className="p-8">
