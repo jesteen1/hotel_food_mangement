@@ -112,7 +112,7 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
                                 value={accessCode}
                                 onChange={(e) => setAccessCode(e.target.value)}
                                 placeholder="ENTER CODE"
-                                className="w-full text-center text-4xl font-extrabold tracking-[0.5em] py-4 bg-gray-50 rounded-2xl border-2 border-gray-100 focus:border-orange-500 focus:bg-white outline-none transition-all placeholder:text-gray-200"
+                                className="w-full text-center text-2xl md:text-4xl font-extrabold tracking-[0.2em] md:tracking-[0.5em] py-4 bg-gray-50 rounded-2xl border-2 border-gray-100 focus:border-orange-500 focus:bg-white outline-none transition-all placeholder:text-gray-200"
                                 autoFocus
                             />
                         </div>
