@@ -52,18 +52,36 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
         setError('');
         setLoading(true);
 
-        try {
-            const result = await verifyAccessCode(shopIdentifier, accessCode.toUpperCase());
-            if (result.success) {
-                await handleVerificationSuccess();
-            } else {
-                setError(result.error || 'Invalid code');
-            }
-        } catch (err) {
-            setError('Something went wrong. Please try again.');
-        } finally {
+        // Get customer location
+        if (!navigator.geolocation) {
+            setError('Geolocation is not supported by your browser.');
             setLoading(false);
+            return;
         }
+
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            try {
+                const result = await verifyAccessCode(
+                    shopIdentifier,
+                    accessCode.toUpperCase(),
+                    position.coords.latitude,
+                    position.coords.longitude
+                );
+                if (result.success) {
+                    await handleVerificationSuccess();
+                } else {
+                    setError(result.error || 'Invalid code');
+                }
+            } catch (err) {
+                setError('Something went wrong. Please try again.');
+            } finally {
+                setLoading(false);
+            }
+        }, (geoError) => {
+            console.error("Geo error:", geoError);
+            setError('Location access required. Please enable GPS to order.');
+            setLoading(false);
+        });
     }
 
     if (!isVerified) {

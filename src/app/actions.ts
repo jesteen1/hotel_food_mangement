@@ -763,18 +763,30 @@ export async function updateAccessCode(newCode?: string) {
     }
 }
 
-export async function verifyAccessCode(identifier: string, code: string) {
+export async function verifyAccessCode(identifier: string, code: string, customerLat?: number, customerLng?: number) {
     try {
         await connectToDatabase();
 
         // Find user to get the actual email if identifier is a slug
         const user = await User.findOne({
             $or: [{ email: identifier }, { slug: identifier }]
-        }, 'email').lean();
+        }, 'email latitude longitude').lean();
 
         if (!user) {
             console.log(`VerifyAccessCode: Shop not found for identifier [${identifier}]`);
             return { success: false, error: "Shop not found" };
+        }
+
+        // Location Check (Optional enforcement if coordinates exist)
+        if (user.latitude && user.longitude && customerLat && customerLng) {
+            const distance = calculateDistance(user.latitude, user.longitude, customerLat, customerLng);
+            console.log(`Distance check for ${identifier}: ${distance.toFixed(3)}km`);
+            if (distance > 0.5) { // 500 meters
+                return {
+                    success: false,
+                    error: `Location mismatch. You appear to be ${distance.toFixed(1)}km away. Please ensure you are at the shop.`
+                };
+            }
         }
 
         const settings = await Settings.findOne({ ownerEmail: user.email });
@@ -793,6 +805,18 @@ export async function verifyAccessCode(identifier: string, code: string) {
         console.error("Verify Access Code Error:", error);
         return { success: false, error: "Verification failed" };
     }
+}
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
 }
 
 export async function getProductsByShop(identifier: string) {
