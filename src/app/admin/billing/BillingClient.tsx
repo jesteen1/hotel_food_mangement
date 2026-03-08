@@ -126,7 +126,7 @@ export default function BillingPage() {
                 <Link href="/admin" className="p-2 hover:bg-gray-100 rounded-full">
                     <ArrowLeft size={24} />
                 </Link>
-                <h1 className="text-3xl font-bold">Billing Dashboard</h1>
+                <h1 className="text-3xl font-bold text-orange-600">Billing Dashboard</h1>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

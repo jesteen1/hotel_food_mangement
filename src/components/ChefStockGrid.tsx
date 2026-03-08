@@ -32,7 +32,7 @@ export default function ChefStockGrid({ products: initialProducts }: { products:
     return (
         <div className="mt-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Quick Stock Management</h2>
+                <h2 className="text-xl font-bold text-orange-600">Quick Stock Management</h2>
                 <div className="relative w-full sm:w-64">
                     <input
                         type="text"

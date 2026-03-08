@@ -13,7 +13,7 @@ export default async function AdminHub() {
         <AuthGuard role="master">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Admin Headquarters</h1>
+                    <h1 className="text-3xl font-bold text-orange-600">Admin Headquarters</h1>
                     <p className="text-gray-500 mt-2">Welcome, <span className="font-bold text-orange-600">{session?.user?.email}</span>. Manage your venue from here.</p>
                 </div>
 
@@ -56,7 +56,7 @@ export default async function AdminHub() {
                 </div>
 
                 <div className="mt-12 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h2 className="text-xl font-bold mb-4">Quick Stats</h2>
+                    <h2 className="text-xl font-bold mb-4 text-orange-600">Quick Stats</h2>
                     <p className="text-gray-500">Select a module above to get started.</p>
                 </div>
             </div>
