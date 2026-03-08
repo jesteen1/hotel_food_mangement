@@ -142,7 +142,7 @@ export default function BillingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Seat List */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border h-fit">
-                    <h2 className="font-bold text-xl mb-4">Active Seats</h2>
+                    <h2 className="font-bold text-xl mb-4 text-orange-600">Active Seats</h2>
                     {activeSeats.length === 0 ? (
                         <p className="text-gray-500">No active bills (Completed orders).</p>
                     ) : (

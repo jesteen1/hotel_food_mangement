@@ -27,7 +27,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [cart, setCart] = useState<CartItem[]>([]);
-    const [seatNumber, setSeatNumber] = useState<string>('');
+    const [seatNumber, setSeatNumber] = useState<string>('1');
 
     // Load from local storage
     useEffect(() => {

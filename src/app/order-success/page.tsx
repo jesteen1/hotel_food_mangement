@@ -1,8 +1,25 @@
 
+'use client';
+
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
+import { useEffect } from 'react';
+import { signOut } from 'next-auth/react';
 
 export default function OrderSuccessPage() {
+    useEffect(() => {
+        // Clear all verification flags upon successful order completion
+        // This ensures the customer must re-enter the code to order more (Privacy)
+        Object.keys(sessionStorage).forEach(key => {
+            if (key.startsWith('verified_')) {
+                sessionStorage.removeItem(key);
+            }
+        });
+
+        // Also ensure any lingering auth session is cleared
+        signOut({ redirect: false });
+    }, []);
+
     return (
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4 animate-in zoom-in-50 duration-500">
             <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600">

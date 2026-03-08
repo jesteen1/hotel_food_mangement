@@ -7,6 +7,7 @@ import MenuGrid from '@/components/MenuGrid';
 import { Lock, Utensils, AlertCircle, ChevronLeft, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { signOut } from 'next-auth/react';
 
 interface CustomerShopClientProps {
     shopIdentifier: string;
@@ -35,8 +36,10 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
     }, [shopIdentifier, tableNo, setSeatNumber]);
 
     async function handleVerificationSuccess() {
-        setLoading(true);
         try {
+            // Log out any staff/admin session to ensure customer privacy
+            await signOut({ redirect: false });
+
             const data = await getProductsByShop(shopIdentifier);
             setShopData(data);
             setIsVerified(true);

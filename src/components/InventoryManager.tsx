@@ -140,7 +140,7 @@ export default function InventoryManager({ products: initialProducts }: { produc
             )}
 
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Products</h2>
+                <h2 className="text-xl font-bold text-orange-600">Products</h2>
                 <div className="flex gap-2">
                     <button
                         onClick={async () => {
@@ -165,7 +165,7 @@ export default function InventoryManager({ products: initialProducts }: { produc
             {/* ... (Add Product Form - keep as is, just need to make sure it renders) */}
             {isAdding && (
                 <div className="mb-8 bg-white border border-gray-200 rounded-xl p-6 animate-in slide-in-from-top-5">
-                    <h3 className="text-lg font-bold mb-4">New Product</h3>
+                    <h3 className="text-lg font-bold mb-4 text-orange-600">New Product</h3>
                     <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1"><label className="text-sm font-medium text-gray-700">Product Name</label><input placeholder="e.g. Chicken Burger" className="border p-2 rounded w-full" value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} required /></div>
                         <div className="space-y-1"><label className="text-sm font-medium text-gray-700">Category</label><input placeholder="e.g. Main, Sides, Drinks" className="border p-2 rounded w-full" value={newProduct.category} onChange={e => setNewProduct({ ...newProduct, category: e.target.value })} required /></div>
