@@ -23,16 +23,8 @@ export default function MenuGrid({ products: initialProducts }: { products: Prod
     const [category, setCategory] = useState<string>('All');
 
     useEffect(() => {
-        const interval = setInterval(async () => {
-            try {
-                const freshProducts = await getProducts();
-                setProducts(freshProducts);
-            } catch (error) {
-                console.error("Failed to poll products", error);
-            }
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
+        setProducts(initialProducts);
+    }, [initialProducts]);
 
     const categories = ['All', ...Array.from(new Set(products.map((p) => p.category)))];
 

@@ -43,11 +43,11 @@ export default function AdminOrderList({ initialOrders }: { initialOrders: Order
         fetchOrders(); // Sync
     };
 
-    // Poll every 4 seconds for new orders
+    // Orders are synced via manual refresh or status updates.
     useEffect(() => {
-        const interval = setInterval(fetchOrders, 4000);
-        return () => clearInterval(interval);
-    }, []);
+        if (!mounted) return;
+        fetchOrders();
+    }, [mounted]);
 
     const filteredOrders = (filter === 'All'
         ? orders

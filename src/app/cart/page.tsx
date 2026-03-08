@@ -9,8 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
-    const { cart, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
-    const [seatNumber, setSeatNumber] = useState('');
+    const { cart, removeFromCart, updateQuantity, clearCart, totalPrice, seatNumber, setSeatNumber } = useCart();
     const [foodNote, setFoodNote] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');

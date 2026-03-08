@@ -1,12 +1,12 @@
-import SettingsClient from './SettingsClient';
 import AuthGuard from '@/components/AuthGuard';
+import QRGeneratorClient from './QRGeneratorClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SettingsPageWrapper() {
+export default async function QRGeneratorPage() {
     return (
         <AuthGuard role="master">
-            <SettingsClient />
+            <QRGeneratorClient />
         </AuthGuard>
     );
 }

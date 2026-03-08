@@ -47,6 +47,36 @@ export async function updateCompanyName(companyName: string) {
     }
 }
 
+export async function updateHotelProfile(data: { companyName: string, address: string, lat: number, lng: number }) {
+    try {
+        await connectToDatabase();
+        const email = await getOwnerEmail();
+        await User.findOneAndUpdate({ email }, {
+            companyName: data.companyName,
+            address: data.address,
+            latitude: data.lat,
+            longitude: data.lng
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Update Hotel Profile Error:", error);
+        return { success: false, error: "Update failed" };
+    }
+}
+
+export async function getHotelProfile() {
+    try {
+        await connectToDatabase();
+        const email = await getOwnerEmail();
+        const user = await User.findOne({ email }, 'companyName address latitude longitude').lean();
+        if (!user) return null;
+        return JSON.parse(JSON.stringify(user));
+    } catch (error) {
+        console.error("Get Hotel Profile Error:", error);
+        return null;
+    }
+}
+
 export async function uploadImage(formData: FormData) {
     const file = formData.get('file') as File;
     if (!file) {
@@ -671,5 +701,130 @@ export async function verifyStepUpOtp(email: string, otp: string) {
     } catch (error) {
         console.error("Step-up Verify Error:", error);
         return { success: false, error: "Verification failed" };
+    }
+}
+
+export async function listHotels() {
+    try {
+        await connectToDatabase();
+        const users = await User.find({}, 'companyName email').lean();
+        return JSON.parse(JSON.stringify(users));
+    } catch (error) {
+        console.error("List Hotels Error:", error);
+        return [];
+    }
+}
+
+export async function getAccessCode() {
+    try {
+        await connectToDatabase();
+        const email = await getOwnerEmail();
+
+        // Ensure user has a slug
+        const user = await User.findOne({ email });
+        if (user && !user.slug && user.companyName) {
+            const baseSlug = user.companyName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 5)}`;
+            user.slug = uniqueSlug;
+            await user.save();
+        }
+
+        const settings = await Settings.findOne({ ownerEmail: email });
+        if (!settings) return null;
+
+        return {
+            accessCode: settings.accessCodes?.[settings.accessCodes.length - 1] || '',
+            allCodes: settings.accessCodes || [],
+            slug: user?.slug || email
+        };
+    } catch (error) {
+        console.error("Get Access Code Error:", error);
+        return null;
+    }
+}
+
+export async function updateAccessCode(newCode?: string) {
+    try {
+        await connectToDatabase();
+        const email = await getOwnerEmail();
+        const accessCode = newCode || Math.random().toString(36).substring(2, 8).toUpperCase();
+
+        await Settings.findOneAndUpdate(
+            { ownerEmail: email },
+            { $push: { accessCodes: accessCode } },
+            { upsert: true }
+        );
+
+        revalidatePath('/admin/qr-generator');
+        return { success: true, accessCode };
+    } catch (error) {
+        console.error("Update Access Code Error:", error);
+        return { success: false, error: "Update failed" };
+    }
+}
+
+export async function verifyAccessCode(identifier: string, code: string) {
+    try {
+        await connectToDatabase();
+
+        // Find user to get the actual email if identifier is a slug
+        const user = await User.findOne({
+            $or: [{ email: identifier }, { slug: identifier }]
+        }, 'email').lean();
+
+        if (!user) {
+            console.log(`VerifyAccessCode: Shop not found for identifier [${identifier}]`);
+            return { success: false, error: "Shop not found" };
+        }
+
+        const settings = await Settings.findOne({ ownerEmail: user.email });
+        if (!settings) {
+            console.log(`VerifyAccessCode: Settings not found for owner [${user.email}]`);
+            return { success: false, error: "Shop settings not found" };
+        }
+
+        // Check ONLY against the latest code
+        const latestCode = settings.accessCodes?.[settings.accessCodes.length - 1];
+        if (latestCode === code) {
+            return { success: true };
+        }
+        return { success: false, error: "Invalid or Expired Access Code" };
+    } catch (error) {
+        console.error("Verify Access Code Error:", error);
+        return { success: false, error: "Verification failed" };
+    }
+}
+
+export async function getProductsByShop(identifier: string) {
+    try {
+        await connectToDatabase();
+
+        // Search by email or slug
+        let user = await User.findOne({
+            $or: [{ email: identifier }, { slug: identifier }]
+        }, 'companyName email slug').lean() as any;
+
+        if (!user && identifier.includes('@')) {
+            // Fallback for email-based lookup if slug wasn't found
+            user = await User.findOne({ email: identifier }, 'companyName email slug').lean();
+        }
+
+        if (!user) {
+            return { products: [], shopName: "Shop Not Found", shopEmail: "" };
+        }
+
+        const products = await Product.find({ ownerEmail: user.email }).lean();
+
+        return {
+            products: JSON.parse(JSON.stringify(products)),
+            shopName: user.companyName || "Our Shop",
+            shopEmail: user.email,
+            shopSlug: user.slug,
+            shopAddress: user.address,
+            shopLocation: { lat: user.latitude, lng: user.longitude }
+        };
+    } catch (error) {
+        console.error("Get Products By Shop Error:", error);
+        return { products: [], shopName: "Error", shopEmail: "" };
     }
 }

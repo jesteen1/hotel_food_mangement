@@ -1,7 +1,7 @@
 import { getOrders, getProducts } from '@/app/actions';
 import AuthGuard from '@/components/AuthGuard';
 import Link from 'next/link';
-import { ChefHat, Receipt, Box, Settings as SettingsIcon } from 'lucide-react';
+import { ChefHat, Receipt, Box, Settings as SettingsIcon, QrCode } from 'lucide-react';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
@@ -45,6 +45,13 @@ export default async function AdminHub() {
                         icon={SettingsIcon}
                         href="/admin/settings"
                         color="bg-gray-100 text-gray-600"
+                    />
+                    <DashboardCard
+                        title="QR & Access"
+                        description="Generate table codes"
+                        icon={QrCode}
+                        href="/admin/qr-generator"
+                        color="bg-purple-100 text-purple-600"
                     />
                 </div>
 

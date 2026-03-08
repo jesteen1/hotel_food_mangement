@@ -30,6 +30,10 @@ export interface IOrder extends Document {
 export interface IUser extends Document {
   email: string;
   companyName: string;
+  slug?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
   password?: string;
   hasSetPassword?: boolean;
   createdAt: Date;
@@ -44,6 +48,10 @@ export interface IOtp extends Document {
 const UserSchema: Schema<IUser> = new Schema({
   email: { type: String, required: true, unique: true },
   companyName: { type: String },
+  slug: { type: String, unique: true, sparse: true },
+  address: { type: String },
+  latitude: { type: Number },
+  longitude: { type: Number },
   password: { type: String },
   hasSetPassword: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
@@ -100,6 +108,7 @@ export interface ISettings extends Document {
     menu: string;
     master: string;
   };
+  accessCodes: string[];
   ownerEmail: string;
 }
 
@@ -111,6 +120,7 @@ const SettingsSchema = new Schema<ISettings>({
     menu: { type: String, default: 'admin123' },
     master: { type: String, default: 'admin123' },
   },
+  accessCodes: { type: [String], default: () => [Math.random().toString(36).substring(2, 8).toUpperCase()] },
   ownerEmail: { type: String, required: true }
 });
 

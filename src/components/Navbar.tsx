@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingCart, LayoutDashboard, Coffee, Box, Menu as MenuIcon, X, Receipt, Shield } from 'lucide-react';
+import { ShoppingCart, LayoutDashboard, Coffee, Box, Menu as MenuIcon, X, Receipt, Shield, Utensils } from 'lucide-react';
 import { useState } from 'react';
 import LogoutButton from './LogoutButton';
 
@@ -13,6 +13,7 @@ export default function Navbar() {
     const isActive = (path: string) => pathname === path;
 
     const links = [
+        { href: '/customer', label: 'Customer', icon: Utensils },
         { href: '/menu', label: 'Menu', icon: Coffee },
         { href: '/cart', label: 'Cart', icon: ShoppingCart },
         { href: '/admin/kitchen', label: 'Chief', icon: LayoutDashboard },

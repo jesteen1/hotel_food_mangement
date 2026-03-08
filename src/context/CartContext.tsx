@@ -19,16 +19,20 @@ interface CartContextType {
     clearCart: () => void;
     totalItems: number;
     totalPrice: number;
+    seatNumber: string;
+    setSeatNumber: (seat: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [cart, setCart] = useState<CartItem[]>([]);
+    const [seatNumber, setSeatNumber] = useState<string>('');
 
     // Load from local storage
     useEffect(() => {
         const savedCart = localStorage.getItem('food-cart');
+        const savedSeat = localStorage.getItem('food-seat');
         if (savedCart) {
             try {
                 setCart(JSON.parse(savedCart));
@@ -36,12 +40,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 console.error('Failed to load cart', e);
             }
         }
+        if (savedSeat) setSeatNumber(savedSeat);
     }, []);
 
     // Save to local storage
     useEffect(() => {
         localStorage.setItem('food-cart', JSON.stringify(cart));
-    }, [cart]);
+        localStorage.setItem('food-seat', seatNumber);
+    }, [cart, seatNumber]);
 
     const addToCart = (product: any) => {
         setCart((prev) => {
@@ -80,7 +86,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <CartContext.Provider
-            value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice }}
+            value={{
+                cart, addToCart, removeFromCart, updateQuantity, clearCart,
+                totalItems, totalPrice, seatNumber, setSeatNumber
+            }}
         >
             {children}
         </CartContext.Provider>

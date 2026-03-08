@@ -1,8 +1,8 @@
 'use client';
 
-import { getAuthSettings, updatePassword, sendOtp, verifyStepUpOtp, deleteAccount, setPassword } from "@/app/actions";
+import { getAuthSettings, updatePassword, sendOtp, verifyStepUpOtp, deleteAccount, setPassword, getHotelProfile, updateHotelProfile } from "@/app/actions";
 import { useState, useEffect } from "react";
-import { Key, Save, Loader2, ShieldCheck, Mail, Lock, AlertTriangle, Trash2 } from "lucide-react";
+import { Key, Save, Loader2, ShieldCheck, Mail, Lock, AlertTriangle, Trash2, MapPin, Building2, Navigation } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -34,6 +34,16 @@ export default function SettingsPage() {
 
     const [errorPopup, setErrorPopup] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
 
+    // Hotel Profile State
+    const [hotelData, setHotelData] = useState<{
+        companyName: string;
+        address: string;
+        lat?: number;
+        lng?: number;
+    }>({ companyName: '', address: '' });
+    const [profileLoading, setProfileLoading] = useState(false);
+    const [geoLoading, setGeoLoading] = useState(false);
+
     useEffect(() => {
         // Check if previously verified in this tab session
         if (sessionStorage.getItem('settings_verified')) {
@@ -43,12 +53,24 @@ export default function SettingsPage() {
 
     useEffect(() => {
         if (isVerified) {
-            getAuthSettings().then((data: any) => {
-                if (data) {
-                    setRoles(Object.keys(data).filter(r => r !== 'master'));
-                    setPasswords(data);
-                    setLoading(false);
+            setLoading(true);
+            Promise.all([
+                getAuthSettings(),
+                getHotelProfile()
+            ]).then(([authData, profileData]: [any, any]) => {
+                if (authData) {
+                    setRoles(Object.keys(authData).filter(r => r !== 'master'));
+                    setPasswords(authData);
                 }
+                if (profileData) {
+                    setHotelData({
+                        companyName: profileData.companyName || '',
+                        address: profileData.address || '',
+                        lat: profileData.latitude,
+                        lng: profileData.longitude
+                    });
+                }
+                setLoading(false);
             });
         }
     }, [isVerified]);
@@ -230,7 +252,56 @@ export default function SettingsPage() {
         setUpdating(null);
     };
 
-    if (loading) return <div className="p-8 text-center">Loading settings...</div>;
+    const handleUpdateProfile = async () => {
+        if (!hotelData.companyName || !hotelData.address || !hotelData.lat || !hotelData.lng) {
+            setErrorPopup({ message: "Please complete all fields and detect location.", type: 'error' });
+            return;
+        }
+        setProfileLoading(true);
+        try {
+            const res = await updateHotelProfile({
+                companyName: hotelData.companyName,
+                address: hotelData.address,
+                lat: hotelData.lat,
+                lng: hotelData.lng
+            });
+            if (res.success) {
+                setErrorPopup({ message: "Hotel profile updated successfully", type: 'success' });
+            } else {
+                setErrorPopup({ message: "Failed to update profile", type: 'error' });
+            }
+        } catch (e) {
+            setErrorPopup({ message: "Error updating profile", type: 'error' });
+        } finally {
+            setProfileLoading(false);
+        }
+    };
+
+    const getGeoLocation = () => {
+        setGeoLoading(true);
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser");
+            setGeoLoading(false);
+            return;
+        }
+        navigator.geolocation.getCurrentPosition((position) => {
+            setHotelData(prev => ({
+                ...prev,
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            }));
+            setGeoLoading(false);
+        }, (error) => {
+            console.error("Geo error:", error);
+            setErrorPopup({ message: "Failed to get location. Ensure GPS is on.", type: 'error' });
+            setGeoLoading(false);
+        });
+    };
+
+    if (loading) return <div className="p-8 text-center flex flex-col items-center gap-4">
+        <Loader2 className="animate-spin text-orange-600" size={40} />
+        <p className="text-gray-500 font-medium">Loading settings...</p>
+    </div>;
 
     return (
         <div className="p-6 max-w-4xl mx-auto relative pb-20">
@@ -240,10 +311,76 @@ export default function SettingsPage() {
                     <button onClick={() => setErrorPopup(null)} className="ml-auto opacity-80 hover:opacity-100">✕</button>
                 </div>
             )}
-            <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-                <Key className="text-orange-600" />
-                Security Settings
+            <h1 className="text-3xl font-black mb-8 flex items-center gap-3 italic">
+                <ShieldCheck className="text-orange-600" size={36} />
+                ADMIN SETTINGS
             </h1>
+
+            {/* Hotel Profile Section */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+                <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <Building2 size={20} className="text-orange-500" />
+                            Hotel Profile & Location
+                        </h2>
+                        <p className="text-gray-500 text-xs">Verify your physical location for customer trust.</p>
+                    </div>
+                    <button
+                        onClick={handleUpdateProfile}
+                        disabled={profileLoading}
+                        className="px-6 py-2 bg-black text-white rounded-xl font-bold hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-all"
+                    >
+                        {profileLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                        Save Changes
+                    </button>
+                </div>
+                <div className="p-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Hotel Name</label>
+                            <input
+                                type="text"
+                                value={hotelData.companyName}
+                                onChange={(e) => setHotelData({ ...hotelData, companyName: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-transparent focus:border-orange-500 focus:bg-white outline-none transition-all font-medium"
+                                placeholder="Hotel Name"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Current Coordinates</label>
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1 px-4 py-3 rounded-xl bg-gray-100 border border-transparent font-mono text-sm text-gray-600">
+                                    {hotelData.lat ? `${hotelData.lat?.toFixed(4)}, ${hotelData.lng?.toFixed(4)}` : 'No Location Detected'}
+                                </div>
+                                <button
+                                    onClick={getGeoLocation}
+                                    disabled={geoLoading}
+                                    className="p-3 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-sm"
+                                    title="Detect GPS"
+                                >
+                                    {geoLoading ? <Loader2 className="animate-spin" size={20} /> : <Navigation size={20} />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Physical Address</label>
+                        <textarea
+                            value={hotelData.address}
+                            onChange={(e) => setHotelData({ ...hotelData, address: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-transparent focus:border-orange-500 focus:bg-white outline-none transition-all font-medium min-h-[100px]"
+                            placeholder="Full Postal Address"
+                        />
+                    </div>
+                    {!hotelData.lat && (
+                        <div className="p-4 bg-orange-50 border border-orange-100 rounded-xl flex items-center gap-3 text-orange-700 text-xs italic">
+                            <AlertTriangle size={16} />
+                            Please click the navigation icon to detect your GPS location for verification.
+                        </div>
+                    )}
+                </div>
+            </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
                 <div className="p-6 border-b border-gray-200">
