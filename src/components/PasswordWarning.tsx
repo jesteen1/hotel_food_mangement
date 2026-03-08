@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowRight } from 'lucide-react';
 
 export default function PasswordWarning() {
     return (
-        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 shadow-sm mx-4 sm:mx-6 lg:mx-8 mt-6">
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 shadow-sm mx-4 sm:mx-6 lg:mx-8 mt-6 no-print">
             <div className="flex items-center justify-between">
                 <div className="flex items-center">
                     <div className="shrink-0">

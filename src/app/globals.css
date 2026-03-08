@@ -26,25 +26,19 @@ body {
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  .no-print {
+    display: none !important;
   }
-  #printable-receipt, #printable-receipt * {
-    visibility: visible;
-  }
+
   #printable-receipt {
     position: absolute;
     left: 0;
     top: 0;
-    width: 78mm; /* Slightly less than 80mm to avoid clipping */
+    width: 78mm;
+    /* Slightly less than 80mm to avoid clipping */
     margin: 0;
     padding: 4mm;
     color: black;
     background: white;
-  }
-  /* Hide URL and page headers/footers usually added by browser */
-  @page {
-    margin: 0;
-    size: 80mm auto; 
   }
 }

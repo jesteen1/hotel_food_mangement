@@ -97,7 +97,7 @@ export default function BillingPage() {
     };
 
     return (
-        <div className="p-6 max-w-6xl mx-auto">
+        <div className="p-6 max-w-6xl mx-auto no-print">
             {/* Delete Confirmation Modal */}
             {itemToDelete && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

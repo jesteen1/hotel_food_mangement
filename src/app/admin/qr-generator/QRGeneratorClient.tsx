@@ -208,15 +208,24 @@ export default function QRGeneratorClient() {
 
                 <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 print-container">
                     {shopUrl && (
-                        <div className="bg-white p-8 rounded-3xl border-2 border-orange-500 shadow-xl no-print flex flex-col items-center">
-                            <div className="text-center mb-6">
+                        <div className="bg-white p-8 rounded-3xl border-2 border-orange-500 shadow-xl flex flex-col items-center qr-card">
+                            <div className="text-center mb-6 no-print">
                                 <span className="text-xs font-black uppercase tracking-widest text-orange-600 bg-orange-50 px-4 py-1.5 rounded-full">Main Shop URL</span>
                                 <h3 className="text-2xl font-black mt-4">WELCOME</h3>
                             </div>
-                            <div className="aspect-square bg-white rounded-2xl flex items-center justify-center p-4 mb-6 border border-gray-100">
+
+                            {/* PRINT-ONLY HEADER */}
+                            <div className="hidden print:block text-center mb-4">
+                                <div className="text-sm font-black text-orange-600 tracking-tighter mb-1">FOODBOOK APP</div>
+                                <div className="text-2xl font-black">WELCOME</div>
+                                <div className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-widest">Scan to View Menu</div>
+                            </div>
+
+                            <div className="aspect-square bg-white rounded-2xl flex items-center justify-center p-4 mb-6 border border-gray-100 print:border-none print:p-0">
                                 <QRCodeSVG id="qr-main" value={shopUrl} size={280} level="H" includeMargin />
                             </div>
-                            <div className="w-full flex items-center justify-between">
+
+                            <div className="w-full flex items-center justify-between no-print">
                                 <p className="text-[10px] text-gray-400 truncate px-2 flex-1">{shopUrl}</p>
                                 <button
                                     onClick={() => downloadQR('qr-main', 'shop-welcome-qr', 'Welcome')}
@@ -224,6 +233,11 @@ export default function QRGeneratorClient() {
                                 >
                                     <Download size={20} />
                                 </button>
+                            </div>
+
+                            {/* PRINT-ONLY FOOTER */}
+                            <div className="hidden print:block text-center mt-2">
+                                <p className="text-[9px] font-mono text-gray-400">{shopUrl}</p>
                             </div>
                         </div>
                     )}
@@ -238,12 +252,18 @@ export default function QRGeneratorClient() {
                                     <span className="text-xs font-black uppercase tracking-widest text-gray-400 bg-gray-50 px-4 py-1.5 rounded-full">Specific Seat</span>
                                     <h3 className="text-2xl font-black mt-4">TABLE #{tableNo}</h3>
                                 </div>
-                                <div className="hidden print:block text-center table-label">
-                                    TABLE #{tableNo}
+
+                                {/* PRINT-ONLY HEADER */}
+                                <div className="hidden print:block text-center mb-4">
+                                    <div className="text-sm font-black text-orange-600 tracking-tighter mb-1">FOODBOOK APP</div>
+                                    <div className="text-2xl font-black">TABLE {tableNo}</div>
+                                    <div className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-widest">Scan to Order Food</div>
                                 </div>
+
                                 <div className="aspect-square bg-white rounded-2xl flex items-center justify-center p-4 border border-gray-100 print:border-none print:p-0">
                                     <QRCodeSVG id={qrId} value={tableUrl} size={260} level="H" includeMargin />
                                 </div>
+
                                 <div className="w-full mt-6 flex items-center justify-between no-print">
                                     <span className="text-[10px] text-gray-400 truncate max-w-[150px]">{tableUrl}</span>
                                     <button
@@ -253,7 +273,12 @@ export default function QRGeneratorClient() {
                                         <Download size={20} />
                                     </button>
                                 </div>
-                                <p className="hidden print:block url-label">{tableUrl}</p>
+
+                                {/* PRINT-ONLY FOOTER */}
+                                <div className="hidden print:block text-center mt-4">
+                                    <p className="text-[9px] font-mono text-gray-400">{tableUrl}</p>
+                                    <div className="mt-4 border-t border-gray-100 pt-2 text-[8px] text-gray-300">Cut along the dotted line</div>
+                                </div>
                             </div>
                         );
                     })}
@@ -263,8 +288,8 @@ export default function QRGeneratorClient() {
             <style jsx global>{`
                 @media print {
                     @page {
-                        margin: 1cm;
-                        size: auto;
+                        margin: 0.5cm;
+                        size: A4 portrait;
                     }
                     .no-print { display: none !important; }
                     html, body, main, #__next { 
@@ -283,15 +308,21 @@ export default function QRGeneratorClient() {
                     }
                     .qr-card {
                         display: inline-block !important;
-                        width: 45% !important;
+                        width: 44% !important;
+                        height: 12cm !important;
                         margin: 2% !important;
-                        border: 3px solid black !important;
-                        padding: 1cm !important;
+                        border: 1px dashed #e5e7eb !important; /* Lighter dashed border for cutting */
+                        padding: 1.5cm 1cm !important;
                         page-break-inside: avoid !important;
                         text-align: center !important;
                         background: white !important;
                         visibility: visible !important;
                         color: black !important;
+                        position: relative !important;
+                        vertical-align: top !important;
+                        box-sizing: border-box !important;
+                        border-radius: 0 !important; /* Straight edges for cutting */
+                        box-shadow: none !important;
                     }
                     .qr-card svg {
                         width: 100% !important;
@@ -299,22 +330,7 @@ export default function QRGeneratorClient() {
                         display: block !important;
                         margin: 0 auto !important;
                     }
-                    .table-label {
-                        font-family: sans-serif !important;
-                        font-weight: 900 !important;
-                        font-size: 24pt !important;
-                        margin-bottom: 0.5cm !important;
-                        display: block !important;
-                        color: black !important;
-                    }
-                    .url-label {
-                        font-family: monospace !important;
-                        font-size: 8pt !important;
-                        margin-top: 0.5cm !important;
-                        display: block !important;
-                        color: black !important;
-                        word-break: break-all !important;
-                    }
+
                 }
             `}</style>
         </div>
