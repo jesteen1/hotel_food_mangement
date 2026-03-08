@@ -25,13 +25,14 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
 
     useEffect(() => {
         if (tableNo) {
+            console.log("Setting seat number to:", tableNo);
             setSeatNumber(tableNo);
         }
         const saved = sessionStorage.getItem(`verified_${shopIdentifier}`);
         if (saved === 'true') {
             handleVerificationSuccess();
         }
-    }, [shopIdentifier, tableNo]);
+    }, [shopIdentifier, tableNo, setSeatNumber]);
 
     async function handleVerificationSuccess() {
         setLoading(true);
