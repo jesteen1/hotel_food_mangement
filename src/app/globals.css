@@ -102,11 +102,20 @@ table th,
     z-index: 9999;
   }
 
-  /* Force all nested text and borders to black */
+  /* Force all nested text and borders to black and background to white */
+  #printable-receipt,
   #printable-receipt * {
     color: black !important;
-    background: transparent !important;
+    background: white !important;
     border-color: #000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Specifically force the receipt container to have a white background */
+  #printable-receipt {
+    background: white !important;
+    color: black !important;
   }
 
   /* Professional text sizing for receipts */

@@ -176,7 +176,7 @@ export default function BillingPage() {
                         <div id="printable-receipt" className="bg-white p-8 rounded-xl shadow-md border relative">
                             <div className="flex justify-between items-start mb-6 border-b-2 pb-6 border-gray-900">
                                 <div className="print-header">
-                                    <h1 className="text-3xl font-black uppercase text-black mb-1">{hotelProfile?.companyName || 'FoodBook'}</h1>
+                                    <h1 className="text-3xl font-black uppercase text-black mb-1">{hotelProfile?.companyName || billData?.companyName || 'FoodBook'}</h1>
                                     <p className="text-gray-900 font-bold">Bill for Seat <span className="text-orange-600">{selectedSeat}</span></p>
                                     <p className="text-gray-900 font-medium">Total Orders: {billData.ordersCount}</p>
                                 </div>
@@ -323,13 +323,15 @@ export default function BillingPage() {
                 </div>
             </div>
             {/* Printable Receipt Section - Hidden on Screen */}
-            <div id="printable-receipt" className="hidden print:block font-mono text-sm leading-tight text-black">
+            <div id="printable-receipt" className="hidden print:block bg-white text-black font-mono text-sm leading-tight">
                 {selectedSeat && billData && (
-                    <div className="flex flex-col items-center w-full">
+                    <div className="flex flex-col items-center w-full bg-white text-black">
                         {/* Header */}
-                        <div className="text-center mb-4">
-                            <h1 className="text-2xl font-black uppercase tracking-wider mb-1">{billData.companyName || "FOODBOOK"}</h1>
-                            <p className="text-sm font-bold uppercase tracking-widest mb-2">HOTEL</p>
+                        <div className="text-center mb-4 w-full">
+                            <h1 className="text-3xl font-black uppercase tracking-wider mb-1 text-black">
+                                {hotelProfile?.companyName || billData.companyName || "FOODBOOK"}
+                            </h1>
+                            <p className="text-sm font-bold uppercase tracking-widest mb-2 text-black">HOTEL RECEIPT</p>
                             <div className="border-b-2 border-dashed border-black w-full my-2"></div>
 
                             {/* Food Note Moved to Top Request */}
