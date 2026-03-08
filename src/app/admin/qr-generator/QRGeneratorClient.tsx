@@ -235,12 +235,10 @@ export default function QRGeneratorClient() {
                                 </button>
                             </div>
 
-                            {/* PRINT-ONLY FOOTER */}
-                            <div className="hidden print:block text-center mt-2">
-                                <p className="text-[9px] font-mono text-black">{shopUrl}</p>
-                            </div>
+                            {/* PRINT-ONLY FOOTER REMOVED */}
                         </div>
                     )}
+
 
                     {shopUrl && Array.from({ length: tableCount }).map((_, i) => {
                         const tableNo = i + 1;
@@ -276,12 +274,12 @@ export default function QRGeneratorClient() {
 
                                 {/* PRINT-ONLY FOOTER */}
                                 <div className="hidden print:block text-center mt-4">
-                                    <p className="text-[9px] font-mono text-black">{tableUrl}</p>
                                     <div className="mt-4 border-t border-black/10 pt-2 text-[8px] text-black">Cut along the dotted line</div>
                                 </div>
                             </div>
                         );
                     })}
+
                 </div>
             </div>
 
