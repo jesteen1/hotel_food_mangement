@@ -62,7 +62,7 @@ export default function CartPage() {
 
     return (
         <div className="max-w-3xl mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Review Order</h1>
+            <h1 className="text-3xl font-bold text-orange-600 mb-8 text-center uppercase tracking-wider">Review Order</h1>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
                 <ul className="divide-y divide-gray-100">
@@ -160,7 +160,7 @@ export default function CartPage() {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full py-4 bg-black text-white rounded-xl font-bold text-lg hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-orange-600 text-white rounded-xl font-bold text-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-100"
                     >
                         {isSubmitting ? (
                             'Placing Order...'

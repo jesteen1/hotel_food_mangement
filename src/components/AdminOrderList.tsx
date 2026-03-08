@@ -47,6 +47,10 @@ export default function AdminOrderList({ initialOrders }: { initialOrders: Order
     useEffect(() => {
         if (!mounted) return;
         fetchOrders();
+
+        // 10-second polling for real-time updates
+        const interval = setInterval(fetchOrders, 10000);
+        return () => clearInterval(interval);
     }, [mounted]);
 
     const filteredOrders = (filter === 'All'

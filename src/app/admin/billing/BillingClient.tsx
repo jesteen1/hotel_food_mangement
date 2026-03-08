@@ -14,11 +14,21 @@ export default function BillingPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [includeTax, setIncludeTax] = useState(true);
 
-    // Initial load
+    // Initial load and polling
     useEffect(() => {
         loadActiveSeats();
         loadProducts();
-    }, []);
+
+        // 10-second polling for real-time updates
+        const interval = setInterval(() => {
+            loadActiveSeats();
+            if (selectedSeat) {
+                refreshBill(selectedSeat);
+            }
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, [selectedSeat]);
 
     const loadProducts = async () => {
         const products = await getProducts();

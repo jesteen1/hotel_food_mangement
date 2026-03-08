@@ -22,6 +22,13 @@ export default function Navbar() {
         { href: '/admin/settings', label: 'Admin', icon: Shield },
     ];
 
+    const isCustomerPath = pathname === '/customer' ||
+        pathname.startsWith('/customer/') ||
+        pathname === '/cart' ||
+        pathname === '/order-success';
+
+    if (isCustomerPath) return null;
+
     return (
         <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
             <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-opacity duration-300 ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
