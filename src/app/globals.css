@@ -58,68 +58,74 @@ table th,
 }
 
 @media print {
-  :root {
-    --background: #ffffff !important;
-    --foreground: #171717 !important;
-    color-scheme: light !important;
+  @page {
+    margin: 0;
+    size: auto;
   }
 
-  .no-print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Hide everything by default, then show ONLY the receipt */
+  body>* {
     display: none !important;
   }
 
+  /* Force display of the root/main structure but hide its children */
+  #__next,
+  body,
+  main {
+    display: block !important;
+  }
+
+  /* Specific elements to stay hidden */
+  nav,
+  .no-print,
+  #navbar-root,
+  .print-hide {
+    display: none !important;
+  }
+
+  /* The actual receipt container */
   #printable-receipt {
+    display: block !important;
     position: absolute;
     left: 0;
     top: 0;
-    width: 78mm;
-    /* Slightly less than 80mm to avoid clipping */
+    width: 100%;
     margin: 0;
-    padding: 4mm;
-    color: black !important;
+    padding: 10mm;
+    box-shadow: none !important;
+    border: none !important;
     background: white !important;
-  }
-
-  /* Force high contrast black/white/orange theme across ALL pages */
-  body * {
-    border-color: black !important;
-    outline-color: black !important;
-  }
-
-  /* Force all text to black by default, but permit orange branding */
-  p,
-  span,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  td,
-  th,
-  div,
-  a,
-  li,
-  b,
-  i,
-  strong,
-  em,
-  input,
-  textarea,
-  label {
     color: black !important;
   }
 
-  /* Ensure background remains white for all printed elements */
-  body,
-  main,
-  section,
-  article,
-  div,
-  table,
-  tr,
-  td,
-  th {
-    background-color: white !important;
+  /* Scale items for thermal printer or standard A4 */
+  .text-4xl {
+    font-size: 24pt !important;
+  }
+
+  .text-3xl {
+    font-size: 18pt !important;
+  }
+
+  .text-2xl {
+    font-size: 16pt !important;
+  }
+
+  /* Force all borders and text to black */
+  * {
+    color: black !important;
+    border-color: #000 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Exception for orange total if needed, but usually better in black for receipts */
+  .text-orange-600 {
+    color: black !important;
   }
 }

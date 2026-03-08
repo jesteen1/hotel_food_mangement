@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getBill, closeBill, getOrders, removeItemFromBill, addItemToBill, getProducts } from '@/app/actions';
+import { getBill, closeBill, getOrders, removeItemFromBill, addItemToBill, getProducts, getHotelProfile } from '@/app/actions';
 import { Printer, CheckCircle, ArrowLeft, Trash2, Plus, X, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
@@ -13,11 +13,13 @@ export default function BillingPage() {
     const [allProducts, setAllProducts] = useState<any[]>([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [includeTax, setIncludeTax] = useState(true);
+    const [hotelProfile, setHotelProfile] = useState<any>(null);
 
     // Initial load and polling
     useEffect(() => {
         loadActiveSeats();
         loadProducts();
+        loadHotelProfile();
 
         // 10-second polling for real-time updates
         const interval = setInterval(() => {
@@ -33,6 +35,11 @@ export default function BillingPage() {
     const loadProducts = async () => {
         const products = await getProducts();
         setAllProducts(products);
+    };
+
+    const loadHotelProfile = async () => {
+        const profile = await getHotelProfile();
+        setHotelProfile(profile);
     };
 
     const loadActiveSeats = async () => {
@@ -166,10 +173,11 @@ export default function BillingPage() {
                 {/* Bill Details */}
                 <div className="md:col-span-2">
                     {selectedSeat && billData ? (
-                        <div className="bg-white p-8 rounded-xl shadow-md border relative">
-                            <div className="flex justify-between items-start mb-6 border-b pb-6">
-                                <div>
-                                    <h2 className="text-2xl font-bold text-gray-900">Bill for Seat <span className="text-orange-600">{selectedSeat}</span></h2>
+                        <div id="printable-receipt" className="bg-white p-8 rounded-xl shadow-md border relative">
+                            <div className="flex justify-between items-start mb-6 border-b-2 pb-6 border-gray-900">
+                                <div className="print-header">
+                                    <h1 className="text-3xl font-black uppercase text-black mb-1">{hotelProfile?.companyName || 'FoodBook'}</h1>
+                                    <p className="text-gray-900 font-bold">Bill for Seat <span className="text-orange-600">{selectedSeat}</span></p>
                                     <p className="text-gray-900 font-medium">Total Orders: {billData.ordersCount}</p>
                                 </div>
                                 <div className="text-right">
