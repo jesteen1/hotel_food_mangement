@@ -144,16 +144,16 @@ export default function BillingPage() {
                 <div className="bg-white p-6 rounded-xl shadow-sm border h-fit">
                     <h2 className="font-bold text-xl mb-4 text-orange-600">Active Seats</h2>
                     {activeSeats.length === 0 ? (
-                        <p className="text-gray-500">No active bills (Completed orders).</p>
+                        <p className="text-gray-900 font-medium bg-gray-50 p-4 rounded-lg border border-dashed border-gray-200">No active bills (Completed orders).</p>
                     ) : (
                         <div className="space-y-2">
                             {activeSeats.map(seat => (
                                 <button
                                     key={seat}
                                     onClick={() => handleSelectSeat(seat)}
-                                    className={`w-full text-left p-3 rounded-lg border transition-colors ${selectedSeat === seat
-                                        ? 'bg-orange-50 border-orange-500 text-orange-700 font-bold'
-                                        : 'hover:bg-gray-50'
+                                    className={`w-full text-left p-3 rounded-xl border-2 transition-all shadow-sm ${selectedSeat === seat
+                                        ? 'bg-orange-500 border-orange-600 text-white font-black shadow-orange-100'
+                                        : 'bg-white border-gray-100 text-gray-900 font-bold hover:border-orange-200 hover:bg-orange-50/30'
                                         }`}
                                 >
                                     Seat {seat}
@@ -218,7 +218,7 @@ export default function BillingPage() {
                             </div>
 
                             <div className="flex flex-col gap-4 border-t-2 border-dashed border-gray-200 pt-6">
-                                <div className="flex justify-between items-center text-gray-600">
+                                <div className="flex justify-between items-center text-gray-900">
                                     <span className="font-medium">Subtotal:</span>
                                     <span className="font-bold">₹{billData.items.reduce((sum: number, item: any) => sum + item.total, 0)}</span>
                                 </div>
@@ -232,7 +232,7 @@ export default function BillingPage() {
                                             onChange={(e) => setIncludeTax(e.target.checked)}
                                             className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300"
                                         />
-                                        <label htmlFor="adminTaxToggle" className="text-gray-700 font-medium cursor-pointer">Include 18% GST</label>
+                                        <label htmlFor="adminTaxToggle" className="text-gray-900 font-bold cursor-pointer underline decoration-orange-200">Include 18% GST</label>
                                     </div>
                                     {includeTax && (
                                         <span className="font-bold text-gray-900">+₹{Math.round(billData.items.reduce((sum: number, item: any) => sum + item.total, 0) * 0.18)}</span>
