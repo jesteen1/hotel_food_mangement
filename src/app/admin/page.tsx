@@ -37,7 +37,7 @@ export default async function AdminHub() {
                         description="Share your thoughts with us"
                         icon={MessageSquareText}
                         href="/admin/feedback"
-                        color="bg-orange-500 text-white shadow-orange-200"
+                        color="bg-orange-100 text-orange-600 border border-orange-200"
                     />
                     <DashboardCard
                         title="Inventory"

@@ -313,7 +313,7 @@ export default function SettingsPage() {
             )}
             <h1 className="text-3xl font-extrabold mb-10 flex items-center gap-3 italic drop-shadow-sm">
                 <ShieldCheck className="text-orange-600" size={40} />
-                <span style={{ color: '#ea580c' }}>!!! ADMIN SETTINGS !!!</span>
+                <span style={{ color: '#ea580c' }}>ADMIN SETTINGS</span>
             </h1>
 
             {/* Hotel Profile Section */}
