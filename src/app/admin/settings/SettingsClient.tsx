@@ -311,7 +311,7 @@ export default function SettingsPage() {
                     <button onClick={() => setErrorPopup(null)} className="ml-auto opacity-80 hover:opacity-100">✕</button>
                 </div>
             )}
-            <h1 className="text-3xl font-black mb-8 flex items-center gap-3 italic">
+            <h1 className="text-3xl font-black mb-8 flex items-center gap-3 italic text-orange-600">
                 <ShieldCheck className="text-orange-600" size={36} />
                 ADMIN SETTINGS
             </h1>

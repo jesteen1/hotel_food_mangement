@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingCart, LayoutDashboard, Coffee, Box, Menu as MenuIcon, X, Receipt, Shield, Utensils } from 'lucide-react';
+import { ShoppingCart, LayoutDashboard, Coffee, Box, Menu as MenuIcon, X, Receipt, Shield, Utensils, MessageSquareText } from 'lucide-react';
 import { useState } from 'react';
 import LogoutButton from './LogoutButton';
 import { useSession } from 'next-auth/react';
@@ -32,6 +32,7 @@ export default function Navbar() {
         { href: '/admin/kitchen', label: 'Chief', icon: LayoutDashboard },
         { href: '/admin/inventory', label: 'Inventory', icon: Box },
         { href: '/admin/billing', label: 'Billing', icon: Receipt },
+        { href: '/admin/feedback', label: 'Feedback', icon: MessageSquareText },
         { href: '/admin/settings', label: 'Admin', icon: Shield },
     ];
 
