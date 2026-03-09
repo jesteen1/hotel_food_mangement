@@ -34,6 +34,7 @@ export interface IUser extends Document {
   address?: string;
   latitude?: number;
   longitude?: number;
+  isLocationLocked?: boolean;
   password?: string;
   hasSetPassword?: boolean;
   createdAt: Date;
@@ -52,6 +53,7 @@ const UserSchema: Schema<IUser> = new Schema({
   address: { type: String },
   latitude: { type: Number },
   longitude: { type: Number },
+  isLocationLocked: { type: Boolean, default: false },
   password: { type: String },
   hasSetPassword: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },

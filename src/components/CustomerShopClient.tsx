@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { verifyAccessCode, getProductsByShop } from '@/app/actions';
+import { verifyAccessCode, getProductsByShop, getShopStatus } from '@/app/actions';
 import MenuGrid from '@/components/MenuGrid';
 import { Lock, Utensils, AlertCircle, ChevronLeft, MapPin } from 'lucide-react';
 import Link from 'next/link';
@@ -20,7 +20,8 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
 
     const [accessCode, setAccessCode] = useState('');
     const [isVerified, setIsVerified] = useState(false);
-    const [shopData, setShopData] = useState<{ products: any[], shopName: string, shopEmail: string } | null>(null);
+    const [shopData, setShopData] = useState<{ products: any[], shopName: string, shopEmail: string, isLocationLocked: boolean, shopAddress?: string } | null>(null);
+    const [shopInfo, setShopInfo] = useState<{ shopName: string, isLocationLocked: boolean, shopAddress?: string } | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -30,6 +31,12 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
             setSeatNumber(tableNo);
         }
         const saved = sessionStorage.getItem(`verified_${shopIdentifier}`);
+
+        // Always fetch basic shop info for locking status
+        getShopStatus(shopIdentifier).then(info => {
+            if (info) setShopInfo(info);
+        });
+
         if (saved === 'true') {
             handleVerificationSuccess();
         }
@@ -56,20 +63,13 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
         setError('');
         setLoading(true);
 
-        // Get customer location
-        if (!navigator.geolocation) {
-            setError('Geolocation is not supported by your browser.');
-            setLoading(false);
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(async (position) => {
+        const performVerification = async (lat?: number, lng?: number) => {
             try {
                 const result = await verifyAccessCode(
                     shopIdentifier,
                     accessCode.toUpperCase(),
-                    position.coords.latitude,
-                    position.coords.longitude
+                    lat,
+                    lng
                 );
                 if (result.success) {
                     await handleVerificationSuccess();
@@ -81,11 +81,31 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
             } finally {
                 setLoading(false);
             }
-        }, (geoError) => {
-            console.error("Geo error:", geoError);
-            setError('Location access required. Please enable GPS to order.');
-            setLoading(false);
-        });
+        };
+
+        // Conditional Geolocation
+        if (shopInfo?.isLocationLocked) {
+            if (!navigator.geolocation) {
+                setError('Geolocation is not supported by your browser.');
+                setLoading(false);
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    await performVerification(position.coords.latitude, position.coords.longitude);
+                },
+                (geoError) => {
+                    console.error("Geo error:", geoError);
+                    setError('Location access required. Please enable GPS to order from this shop.');
+                    setLoading(false);
+                },
+                { enableHighAccuracy: true }
+            );
+        } else {
+            // No lock, skip GPS
+            await performVerification();
+        }
     }
 
     if (!isVerified) {
@@ -96,8 +116,13 @@ export default function CustomerShopClient({ shopIdentifier, tableNo }: Customer
                         <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/30">
                             <Lock size={32} />
                         </div>
-                        <h1 className="text-2xl font-bold">Access Code Required</h1>
-                        <p className="text-white mt-2">Please enter the access code provided by the shop.</p>
+                        <h1 className="text-2xl font-bold">{shopInfo?.shopName || 'Access Code Required'}</h1>
+                        <p className="text-white mt-1 text-sm opacity-90">{shopInfo?.shopAddress || 'Please enter the access code provided.'}</p>
+                        {shopInfo?.isLocationLocked && (
+                            <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest bg-white/20 py-1.5 px-3 rounded-full border border-white/30 truncate">
+                                <MapPin size={12} /> Proximity Verification Near-Active
+                            </div>
+                        )}
                     </div>
 
                     <form onSubmit={handleVerify} className="p-8">

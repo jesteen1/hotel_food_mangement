@@ -1,6 +1,6 @@
 'use client';
 
-import { getAuthSettings, updatePassword, sendOtp, verifyStepUpOtp, deleteAccount, setPassword, getHotelProfile, updateHotelProfile } from "@/app/actions";
+import { getAuthSettings, updatePassword, sendOtp, verifyStepUpOtp, deleteAccount, setPassword, getHotelProfile, updateHotelProfile, lockHotelLocation } from "@/app/actions";
 import { useState, useEffect } from "react";
 import { Key, Save, Loader2, ShieldCheck, Mail, Lock, AlertTriangle, Trash2, MapPin, Building2, Navigation } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
@@ -40,6 +40,7 @@ export default function SettingsPage() {
         address: string;
         lat?: number;
         lng?: number;
+        isLocked?: boolean;
     }>({ companyName: '', address: '' });
     const [profileLoading, setProfileLoading] = useState(false);
     const [geoLoading, setGeoLoading] = useState(false);
@@ -67,7 +68,8 @@ export default function SettingsPage() {
                         companyName: profileData.companyName || '',
                         address: profileData.address || '',
                         lat: profileData.latitude,
-                        lng: profileData.longitude
+                        lng: profileData.longitude,
+                        isLocked: profileData.isLocationLocked
                     });
                 }
                 setLoading(false);
@@ -298,6 +300,37 @@ export default function SettingsPage() {
         });
     };
 
+    const handleLockLocation = async () => {
+        if (!hotelData.lat || !hotelData.lng) {
+            setErrorPopup({ message: "No location detected to lock.", type: 'error' });
+            return;
+        }
+
+        // Mobile detection
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (!isMobile) {
+            setErrorPopup({ message: "Please use your mobile phone to lock the GPS location for maximum accuracy.", type: 'error' });
+            return;
+        }
+
+        if (!confirm("Are you sure? Once locked, your shop location cannot be changed for security reasons.")) return;
+
+        setProfileLoading(true);
+        try {
+            const res = await lockHotelLocation();
+            if (res.success) {
+                setHotelData(prev => ({ ...prev, isLocked: true }));
+                setErrorPopup({ message: "Location locked permanently!", type: 'success' });
+            } else {
+                setErrorPopup({ message: res.error || "Failed to lock location", type: 'error' });
+            }
+        } catch (e) {
+            setErrorPopup({ message: "Error locking location", type: 'error' });
+        } finally {
+            setProfileLoading(false);
+        }
+    };
+
     if (loading) return <div className="p-8 text-center flex flex-col items-center gap-4">
         <Loader2 className="animate-spin text-orange-600" size={40} />
         <p className="text-gray-500 font-medium">Loading settings...</p>
@@ -326,14 +359,26 @@ export default function SettingsPage() {
                         </h2>
                         <p className="text-gray-500 text-xs">Verify your physical location for customer trust.</p>
                     </div>
-                    <button
-                        onClick={handleUpdateProfile}
-                        disabled={profileLoading}
-                        className="px-6 py-2 bg-black text-white rounded-xl font-bold hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-all"
-                    >
-                        {profileLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                        Save Changes
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {!hotelData.isLocked && (
+                            <button
+                                onClick={handleLockLocation}
+                                disabled={profileLoading}
+                                className="px-4 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2 transition-all shadow-sm"
+                            >
+                                <Lock size={18} />
+                                Lock Permanent Location
+                            </button>
+                        )}
+                        <button
+                            onClick={handleUpdateProfile}
+                            disabled={profileLoading || hotelData.isLocked}
+                            className="px-6 py-2 bg-black text-white rounded-xl font-bold hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 transition-all"
+                        >
+                            {profileLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                            {hotelData.isLocked ? 'Profile Locked' : 'Save Changes'}
+                        </button>
+                    </div>
                 </div>
                 <div className="p-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -355,8 +400,8 @@ export default function SettingsPage() {
                                 </div>
                                 <button
                                     onClick={getGeoLocation}
-                                    disabled={geoLoading}
-                                    className="p-3 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-sm"
+                                    disabled={geoLoading || hotelData.isLocked}
+                                    className="p-3 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
                                     title="Detect GPS"
                                 >
                                     {geoLoading ? <Loader2 className="animate-spin" size={20} /> : <Navigation size={20} />}
@@ -369,11 +414,17 @@ export default function SettingsPage() {
                         <textarea
                             value={hotelData.address}
                             onChange={(e) => setHotelData({ ...hotelData, address: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-transparent focus:border-orange-500 focus:bg-white outline-none transition-all font-medium min-h-[100px]"
+                            disabled={hotelData.isLocked}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-transparent focus:border-orange-500 focus:bg-white outline-none transition-all font-medium min-h-[100px] disabled:bg-gray-100"
                             placeholder="Full Postal Address"
                         />
                     </div>
-                    {!hotelData.lat && (
+                    {hotelData.isLocked ? (
+                        <div className="p-4 bg-green-50 border border-green-100 rounded-xl flex items-center gap-3 text-green-700 text-xs font-bold">
+                            <ShieldCheck size={16} />
+                            Your shop location is locked and verified. Customers must be within 300m to order.
+                        </div>
+                    ) : !hotelData.lat && (
                         <div className="p-4 bg-orange-50 border border-orange-100 rounded-xl flex items-center gap-3 text-orange-700 text-xs italic">
                             <AlertTriangle size={16} />
                             Please click the navigation icon to detect your GPS location for verification.

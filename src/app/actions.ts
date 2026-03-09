@@ -51,6 +51,12 @@ export async function updateHotelProfile(data: { companyName: string, address: s
     try {
         await connectToDatabase();
         const email = await getOwnerEmail();
+
+        const user = await User.findOne({ email });
+        if (user?.isLocationLocked) {
+            return { success: false, error: "Profile is locked and cannot be modified." };
+        }
+
         await User.findOneAndUpdate({ email }, {
             companyName: data.companyName,
             address: data.address,
@@ -64,11 +70,32 @@ export async function updateHotelProfile(data: { companyName: string, address: s
     }
 }
 
+export async function lockHotelLocation() {
+    try {
+        await connectToDatabase();
+        const email = await getOwnerEmail();
+        const user = await User.findOne({ email });
+
+        if (!user?.latitude || !user?.longitude) {
+            return { success: false, error: "Please detect location before locking." };
+        }
+
+        user.isLocationLocked = true;
+        await user.save();
+
+        revalidatePath('/admin/settings');
+        return { success: true };
+    } catch (error) {
+        console.error("Lock Location Error:", error);
+        return { success: false, error: "Locking failed" };
+    }
+}
+
 export async function getHotelProfile() {
     try {
         await connectToDatabase();
         const email = await getOwnerEmail();
-        const user = await User.findOne({ email }, 'companyName address latitude longitude').lean();
+        const user = await User.findOne({ email }, 'companyName address latitude longitude isLocationLocked').lean();
         if (!user) return null;
         return JSON.parse(JSON.stringify(user));
     } catch (error) {
@@ -777,14 +804,16 @@ export async function verifyAccessCode(identifier: string, code: string, custome
             return { success: false, error: "Shop not found" };
         }
 
-        // Location Check (Optional enforcement if coordinates exist)
-        if (user.latitude && user.longitude && customerLat && customerLng) {
-            const distance = calculateDistance(user.latitude, user.longitude, customerLat, customerLng);
+        if (user.isLocationLocked) {
+            if (typeof customerLat !== 'number' || typeof customerLng !== 'number') {
+                return { success: false, error: "Location access is required for this shop. Please enable GPS." };
+            }
+            const distance = calculateDistance(user.latitude as number, user.longitude as number, customerLat, customerLng);
             console.log(`Distance check for ${identifier}: ${distance.toFixed(3)}km`);
-            if (distance > 0.5) { // 500 meters
+            if (distance > 0.3) { // 300 meters
                 return {
                     success: false,
-                    error: `Location mismatch. You appear to be ${distance.toFixed(1)}km away. Please ensure you are at the shop.`
+                    error: `Location mismatch. You appear to be ${(distance * 1000).toFixed(0)}m away. Please ensure you are at the shop (300m limit).`
                 };
             }
         }
@@ -834,7 +863,7 @@ export async function getProductsByShop(identifier: string) {
         }
 
         if (!user) {
-            return { products: [], shopName: "Shop Not Found", shopEmail: "" };
+            return { products: [], shopName: "Shop Not Found", shopEmail: "", isLocationLocked: false };
         }
 
         const products = await Product.find({ ownerEmail: user.email }).lean();
@@ -845,10 +874,32 @@ export async function getProductsByShop(identifier: string) {
             shopEmail: user.email,
             shopSlug: user.slug,
             shopAddress: user.address,
-            shopLocation: { lat: user.latitude, lng: user.longitude }
+            shopLocation: { lat: user.latitude, lng: user.longitude },
+            isLocationLocked: user.isLocationLocked || false
         };
     } catch (error) {
         console.error("Get Products By Shop Error:", error);
-        return { products: [], shopName: "Error", shopEmail: "" };
+        return { products: [], shopName: "Error", shopEmail: "", isLocationLocked: false };
+    }
+}
+
+export async function getShopStatus(identifier: string) {
+    try {
+        await connectToDatabase();
+        const user = await User.findOne({
+            $or: [{ email: identifier }, { slug: identifier }]
+        }, 'companyName email address latitude longitude isLocationLocked').lean();
+
+        if (!user) return null;
+
+        return {
+            shopName: user.companyName || "Our Shop",
+            shopEmail: user.email,
+            shopAddress: user.address,
+            isLocationLocked: user.isLocationLocked || false
+        };
+    } catch (error) {
+        console.error("Get Shop Status Error:", error);
+        return null;
     }
 }
