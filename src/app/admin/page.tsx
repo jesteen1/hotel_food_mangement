@@ -33,6 +33,13 @@ export default async function AdminHub() {
                         color="bg-green-100 text-green-600"
                     />
                     <DashboardCard
+                        title="Feedback"
+                        description="Share your thoughts with us"
+                        icon={MessageSquareText}
+                        href="/admin/feedback"
+                        color="bg-orange-100 text-orange-600"
+                    />
+                    <DashboardCard
                         title="Inventory"
                         description="Add or edit menu items"
                         icon={Box}
@@ -52,13 +59,6 @@ export default async function AdminHub() {
                         icon={QrCode}
                         href="/admin/qr-generator"
                         color="bg-purple-100 text-purple-600"
-                    />
-                    <DashboardCard
-                        title="Feedback"
-                        description="Share your thoughts with us"
-                        icon={MessageSquareText}
-                        href="/admin/feedback"
-                        color="bg-orange-100 text-orange-600"
                     />
                 </div>
 
