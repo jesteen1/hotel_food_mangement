@@ -311,9 +311,9 @@ export default function SettingsPage() {
                     <button onClick={() => setErrorPopup(null)} className="ml-auto opacity-80 hover:opacity-100">✕</button>
                 </div>
             )}
-            <h1 className="text-3xl font-black mb-8 flex items-center gap-3 italic text-orange-600">
-                <ShieldCheck className="text-orange-600" size={36} />
-                ADMIN SETTINGS
+            <h1 className="text-3xl font-extrabold mb-10 flex items-center gap-3 italic drop-shadow-sm">
+                <ShieldCheck className="text-orange-600" size={40} />
+                <span style={{ color: '#ea580c' }}>!!! ADMIN SETTINGS !!!</span>
             </h1>
 
             {/* Hotel Profile Section */}

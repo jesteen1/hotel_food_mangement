@@ -13,7 +13,7 @@ export default async function AdminHub() {
         <AuthGuard role="master">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-orange-600">Admin Headquarters</h1>
+                    <h1 className="text-4xl font-extrabold text-orange-600 drop-shadow-sm italic">Admin Headquarters</h1>
                     <p className="text-gray-500 mt-2">Welcome, <span className="font-bold text-orange-600">{session?.user?.email}</span>. Manage your venue from here.</p>
                 </div>
 
@@ -37,7 +37,7 @@ export default async function AdminHub() {
                         description="Share your thoughts with us"
                         icon={MessageSquareText}
                         href="/admin/feedback"
-                        color="bg-orange-100 text-orange-600"
+                        color="bg-orange-500 text-white shadow-orange-200"
                     />
                     <DashboardCard
                         title="Inventory"

@@ -9,7 +9,8 @@ import { useSession } from 'next-auth/react';
 
 export default function Navbar() {
     const pathname = usePathname();
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
+    console.log("Navbar Session Status:", status, session?.user?.email);
     const [isOpen, setIsOpen] = useState(false);
 
     const isActive = (path: string) => pathname === path;
@@ -36,7 +37,7 @@ export default function Navbar() {
         { href: '/admin/settings', label: 'Admin', icon: Shield },
     ];
 
-    const links = session?.user ? [...publicLinks, ...adminLinks] : publicLinks;
+    const links = session?.user ? [...publicLinks, ...adminLinks] : [...publicLinks, { href: '/admin/feedback', label: 'Feedback (Debug)', icon: MessageSquareText }];
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
@@ -45,7 +46,7 @@ export default function Navbar() {
                     <div className="flex items-center">
                         <Link href="/" className="flex-shrink-0 flex items-center gap-2">
                             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
-                                FoodBook App
+                                FoodBook App <span className="text-[10px] text-red-500 font-mono">v2</span>
                             </span>
                         </Link>
                     </div>
